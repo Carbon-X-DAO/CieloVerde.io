@@ -3,6 +3,7 @@ module github.com/Carbon-X-DAO/QRInvite
 go 1.17
 
 require (
+	github.com/boombuler/barcode v1.0.1
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/lib/pq v1.10.4
 )

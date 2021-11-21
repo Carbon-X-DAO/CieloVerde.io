@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
 	"github.com/Carbon-X-DAO/QRInvite/templates"
@@ -61,9 +62,18 @@ func (server *Server) Shutdown(ctx context.Context) error {
 }
 
 func (server *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	isCodePath, err := regexp.MatchString(`^\/code\/[a-f0-9]{32}$`, r.URL.Path)
+	if err != nil {
+		log.Printf("failed to compare path to regex: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	switch {
 	case r.URL.Path == "/submit-form" && r.Method == http.MethodPost:
 		server.handleForm(w, r)
+	case isCodePath && r.Method == http.MethodGet:
+		server.handleCode(w, r)
 	default:
 		server.handlePath(w, r)
 	}

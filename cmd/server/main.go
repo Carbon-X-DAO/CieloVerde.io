@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -37,7 +38,7 @@ func main() {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	if _, err := db.ExecContext(ctx, `CREATE DATABASE qrinvite`); err != nil {
+	if _, err := db.ExecContext(ctx, `CREATE DATABASE qrinvite`); err != nil && !strings.Contains(err.Error(), "already exists") {
 		log.Fatalf("failed to create database qrinvite: %s", err)
 	}
 	cancel()

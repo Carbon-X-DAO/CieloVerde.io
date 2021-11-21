@@ -28,6 +28,7 @@ const handleSubmit = (e) => {
   else {
     fetch('http://localhost:8080/submit-form', {
       method: 'POST',
+      redirect: 'follow',
       body: JSON.stringify({
         name,
         email,
@@ -38,8 +39,11 @@ const handleSubmit = (e) => {
         'Content-Type': 'application/json',
       }
     }).then(resp => {
-      if (resp.status >= 200 && resp.status < 300) {
+      if (resp.status >= 200 && resp.status < 400) {
         console.log(resp);
+        if (resp.redirected) {
+          window.location.href = resp.url
+        }
         return resp;
       } else {
         console.log("Form submission failed ", resp.status, resp.statusText)
