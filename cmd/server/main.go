@@ -66,11 +66,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to initialize a postgres instance for app usage: %s", err)
 	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			log.Fatalf("failed to close DB connection: %s", err)
-		}
-	}()
 
 	var root string
 
@@ -121,5 +116,9 @@ func (a App) Shutdown(ctx context.Context) error {
 	if err := a.srv.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("failed to shut shut down HTTP server: %s", err)
 	}
+	if err := a.db.Close(); err != nil {
+		return fmt.Errorf("failed to close DB connection: %s", err)
+	}
+
 	return nil
 }
