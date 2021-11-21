@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	fileserver "github.com/Carbon-X-DAO/QRInvite/fileserver"
 	_ "github.com/lib/pq"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -21,7 +23,7 @@ import (
 
 type App struct {
 	db  *sql.DB
-	srv *http.Server
+	srv *fileserver.Server
 }
 
 func main() {
@@ -62,16 +64,24 @@ func main() {
 		log.Fatalf("failed to apply all migrations: %s", err)
 	}
 
-	srv := &http.Server{
-		Addr:    "0.0.0.0:8080",
-		Handler: http.DefaultServeMux,
-	}
-
 	dbName = "qrinvite"
 	db, err = sql.Open("postgres", fmt.Sprintf("postgres://%s:%d/%s?%s", dbHost, dbPort, dbName, opts))
 	if err != nil {
 		log.Fatalf("failed to initialize a postgres instance for app usage: %s", err)
 	}
+
+	var root string
+
+	if len(flag.Args()) > 0 {
+		root = flag.Arg(0)
+	} else {
+		root, err = os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	srv := fileserver.New(root)
 
 	a := App{
 		db:  db,
@@ -95,22 +105,14 @@ func main() {
 		close(serverShutdown)
 	}()
 
-	log.Printf("starting the web server on port %d", 8080)
-	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	addr := "0.0.0.0:8080"
+	log.Printf("starting the web server on port %s", addr)
+	if err := srv.Listen(addr); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("failed to serve: %s", err)
 	}
 
 	<-serverShutdown
 	log.Printf("server has shut down... Exiting.")
-}
-
-func (a App) rootHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("received %s request to path %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
-	w.WriteHeader(http.StatusOK)
-}
-
-func (a App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	a.rootHandler(w, r)
 }
 
 func (a App) Shutdown(ctx context.Context) error {

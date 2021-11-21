@@ -1,0 +1,64 @@
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+
+		<title>{{.Name}}/</title>
+
+		<style>
+			table {
+				width: 50%;
+				border-collapse: collapse;
+			}
+
+			th {
+				border-bottom: 0.1em solid currentColor;
+			}
+
+			th, td {
+				padding: 0.2em 0;
+				text-align: left;
+			}
+		</style>
+	</head>
+
+	<body>
+		<h1>{{.Name}}/</h1>
+
+		<table>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Last Modified</th>
+					<th>Size</th>
+				</tr>
+			</thead>
+
+			<tbody>
+				{{- range .Entries}}
+					<tr>
+						<td>
+							<a href="{{.RelPath}}">
+								{{- if .IsDir}}
+									{{.Name}}/
+								{{else}}
+									{{.Name}}
+								{{end}}
+							</a>
+						</td>
+						<td>
+							{{.LastModifiedAt.Format "2006-01-02 15:04"}}
+						</td>
+						<td>
+							{{- if .IsDir }}
+								-
+							{{else}}
+								{{.Size}}
+							{{end}}
+						</td>
+					</tr>
+				{{end}}
+			</tbody>
+		</table>
+	</body>
+</html>
