@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -9,34 +11,71 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-pg/pg/v10"
+	_ "github.com/lib/pq"
+
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 type App struct {
-	db *pg.DB
+	db  *sql.DB
+	srv *http.Server
 }
 
 func main() {
-	db := pg.Connect(&pg.Options{
-		Addr:     "localhost:5432",
-		User:     "john",
-		Password: "",
-		Database: "postgres",
-	})
+	dbHost := "localhost"
+	dbPort := 5432
+	dbName := "postgres"
+	opts := "sslmode=disable"
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	if err := db.Ping(ctx); err != nil {
+	db, err := sql.Open("postgres", fmt.Sprintf("postgres://%s:%d/%s?%s", dbHost, dbPort, dbName, opts))
+	if err != nil {
+		log.Fatalf("failed to initialize a postgres instance for DBMS configuration: %s", err)
+	}
+
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Fatalf("failed to close DB connection: %s", err)
+		}
+	}()
+
+	if err := db.Ping(); err != nil {
 		log.Fatalf("failed to connect to the postgres instance: %s", err)
 	}
-	cancel()
 
-	a := App{
-		db: db,
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		log.Fatalf("failed to obtain postgres driver for migrations: %s", err)
+	}
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://migrations",
+		"postgres",
+		driver,
+	)
+	if err != nil {
+		log.Fatalf("failed to initialize a migrate driver instance: %s", err)
 	}
 
-	srv := http.Server{
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatalf("failed to apply all migrations: %s", err)
+	}
+
+	srv := &http.Server{
 		Addr:    "0.0.0.0:8080",
-		Handler: a,
+		Handler: http.DefaultServeMux,
+	}
+
+	dbName = "qrinvite"
+	db, err = sql.Open("postgres", fmt.Sprintf("postgres://%s:%d/%s?%s", dbHost, dbPort, dbName, opts))
+	if err != nil {
+		log.Fatalf("failed to initialize a postgres instance for app usage: %s", err)
+	}
+
+	a := App{
+		db:  db,
+		srv: srv,
 	}
 
 	killed := make(chan os.Signal)
@@ -49,7 +88,7 @@ func main() {
 		log.Printf("received signal to shutdown: %s", sig)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		if err := srv.Shutdown(ctx); err != nil {
+		if err := a.Shutdown(ctx); err != nil {
 			log.Printf("failed to shutdown server: %s", err)
 		}
 		cancel()
@@ -72,4 +111,11 @@ func (a App) rootHandler(w http.ResponseWriter, r *http.Request) {
 
 func (a App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	a.rootHandler(w, r)
+}
+
+func (a App) Shutdown(ctx context.Context) error {
+	if err := a.srv.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+		return fmt.Errorf("failed to shut shut down HTTP server: %s", err)
+	}
+	return nil
 }
