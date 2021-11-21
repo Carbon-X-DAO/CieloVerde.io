@@ -1,4 +1,4 @@
-package server
+package fileserver
 
 /*
 Below code shamelessly taken from https://github.com/itsliamegan/fileserver
@@ -8,7 +8,6 @@ import (
 	"context"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -51,49 +50,12 @@ func (server *Server) Shutdown(ctx context.Context) error {
 	return server.srv.Shutdown(ctx)
 }
 
-func (server *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
-	if req.URL.Path == "/submit-form" && req.Method == http.MethodPost {
-		bs, err := ioutil.ReadAll(req.Body)
-		if err != nil {
-			log.Printf("failed to read /submit-form request body: %s", err)
-			res.WriteHeader(http.StatusInternalServerError)
-		}
-		log.Printf("someone sent us form data!!! %s", bs)
-		res.WriteHeader(http.StatusOK)
-		return
-	}
-	path := filepath.Join(server.root, req.URL.Path)
-	exists, err := fsutil.Exists(path)
-	if err != nil {
-		writeErr(err, res)
-		return
-	}
-
-	if exists {
-		isDir, err := fsutil.IsDir(path)
-		if err != nil {
-			writeErr(err, res)
-			return
-		}
-
-		if isDir {
-			server.serveDir(path, res)
-		} else {
-			server.serveFile(path, res)
-		}
-	} else {
-		htmlFile := path + ".html"
-		exists, err = fsutil.Exists(htmlFile)
-		if err != nil {
-			writeErr(err, res)
-			return
-		}
-
-		if exists {
-			server.serveFile(htmlFile, res)
-		} else {
-			server.serveNotFound(res)
-		}
+func (server *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch {
+	case r.URL.Path == "/submit-form" && r.Method == http.MethodPost:
+		handleForm(w, r)
+	case r.URL.Path == "/" && r.Method == http.MethodGet:
+		server.handlePath(w, r)
 	}
 }
 
