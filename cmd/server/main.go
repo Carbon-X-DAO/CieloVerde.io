@@ -36,13 +36,30 @@ func main() {
 		log.Fatalf("failed to connect to the postgres instance: %s", err)
 	}
 
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	if _, err := db.ExecContext(ctx, `CREATE DATABASE qrinvite`); err != nil {
+		log.Fatalf("failed to create database qrinvite: %s", err)
+	}
+	cancel()
+
+	// switch to the qrinvite DB now that it has been created
+	dbName = "qrinvite"
+	db, err = sql.Open("postgres", fmt.Sprintf("postgres://%s:%d/%s?%s", dbHost, dbPort, dbName, opts))
+	if err != nil {
+		log.Fatalf("failed to initialize a postgres instance for app usage: %s", err)
+	}
+
+	driver, err := postgres.WithInstance(db, &postgres.Config{
+		DatabaseName: "qrinvite",
+	})
 	if err != nil {
 		log.Fatalf("failed to obtain postgres driver for migrations: %s", err)
 	}
+
+	// apply migrations
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://migrations",
-		"postgres",
+		"qrinvite",
 		driver,
 	)
 	if err != nil {
@@ -51,15 +68,6 @@ func main() {
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatalf("failed to apply all migrations: %s", err)
-	}
-	if err := db.Close(); err != nil {
-		log.Fatalf("failed to close migration DBMS connection: %s", err)
-	}
-
-	dbName = "qrinvite"
-	db, err = sql.Open("postgres", fmt.Sprintf("postgres://%s:%d/%s?%s", dbHost, dbPort, dbName, opts))
-	if err != nil {
-		log.Fatalf("failed to initialize a postgres instance for app usage: %s", err)
 	}
 
 	var root string

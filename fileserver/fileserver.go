@@ -63,7 +63,7 @@ func (server *Server) Shutdown(ctx context.Context) error {
 func (server *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.URL.Path == "/submit-form" && r.Method == http.MethodPost:
-		handleForm(w, r)
+		server.handleForm(w, r)
 	default:
 		server.handlePath(w, r)
 	}

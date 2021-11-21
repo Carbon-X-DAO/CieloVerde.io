@@ -24,7 +24,7 @@ pg_ctl -D db -l logfile start
 When you're all done you can
 ```bash
 pg_ctl -D db -l logfile stop
-rm logfile
+rm -rf db logfile
 ```
 
 ## `go` webserver
