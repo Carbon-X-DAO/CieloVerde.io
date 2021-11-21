@@ -1,7 +1,6 @@
 import './App.scss';
 import React, {useState} from 'react'
 import {ToastContainer, toast} from 'react-toastify'
-import fireDB from './firebase'
 import 'react-toastify/dist/ReactToastify.css';
 
 const initialValues={
