@@ -37,12 +37,6 @@ func main() {
 		log.Fatalf("failed to initialize a postgres instance for DBMS configuration: %s", err)
 	}
 
-	defer func() {
-		if err := db.Close(); err != nil {
-			log.Fatalf("failed to close DB connection: %s", err)
-		}
-	}()
-
 	if err := db.Ping(); err != nil {
 		log.Fatalf("failed to connect to the postgres instance: %s", err)
 	}
@@ -63,12 +57,20 @@ func main() {
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatalf("failed to apply all migrations: %s", err)
 	}
+	if err := db.Close(); err != nil {
+		log.Fatalf("failed to close migration DBMS connection: %s", err)
+	}
 
 	dbName = "qrinvite"
 	db, err = sql.Open("postgres", fmt.Sprintf("postgres://%s:%d/%s?%s", dbHost, dbPort, dbName, opts))
 	if err != nil {
 		log.Fatalf("failed to initialize a postgres instance for app usage: %s", err)
 	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Fatalf("failed to close DB connection: %s", err)
+		}
+	}()
 
 	var root string
 
