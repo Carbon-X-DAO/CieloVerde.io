@@ -6,6 +6,8 @@ Below code shamelessly taken from https://github.com/itsliamegan/fileserver
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -21,11 +23,12 @@ type Server struct {
 	root string
 	mux  *http.ServeMux
 	srv  *http.Server
+	db   *sql.DB
 }
 
-func New(root string) *Server {
+func New(root string, db *sql.DB) *Server {
 	mux := http.NewServeMux()
-	server := &Server{root: root, mux: mux}
+	server := &Server{root: root, mux: mux, db: db}
 	mux.Handle("/", server)
 
 	return server
@@ -47,14 +50,21 @@ func (server *Server) Listen(addr string) error {
 }
 
 func (server *Server) Shutdown(ctx context.Context) error {
-	return server.srv.Shutdown(ctx)
+	if err := server.srv.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+		return fmt.Errorf("failed to shut shut down HTTP server: %s", err)
+	}
+	if err := server.db.Close(); err != nil {
+		return fmt.Errorf("failed to close DB connection: %s", err)
+	}
+
+	return nil
 }
 
 func (server *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.URL.Path == "/submit-form" && r.Method == http.MethodPost:
 		handleForm(w, r)
-	case r.URL.Path == "/" && r.Method == http.MethodGet:
+	default:
 		server.handlePath(w, r)
 	}
 }

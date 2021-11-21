@@ -21,11 +21,6 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-type App struct {
-	db  *sql.DB
-	srv *fileserver.Server
-}
-
 func main() {
 	dbHost := "localhost"
 	dbPort := 5432
@@ -80,12 +75,7 @@ func main() {
 
 	log.Printf("discovered working directory as: %s", root)
 	root += "/frontend/build"
-	srv := fileserver.New(root)
-
-	a := App{
-		db:  db,
-		srv: srv,
-	}
+	srv := fileserver.New(root, db)
 
 	killed := make(chan os.Signal)
 	signal.Notify(killed, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -97,7 +87,7 @@ func main() {
 		log.Printf("received signal to shutdown: %s", sig)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		if err := a.Shutdown(ctx); err != nil {
+		if err := srv.Shutdown(ctx); err != nil {
 			log.Printf("failed to shutdown server: %s", err)
 		}
 		cancel()
@@ -112,15 +102,4 @@ func main() {
 
 	<-serverShutdown
 	log.Printf("server has shut down... Exiting.")
-}
-
-func (a App) Shutdown(ctx context.Context) error {
-	if err := a.srv.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
-		return fmt.Errorf("failed to shut shut down HTTP server: %s", err)
-	}
-	if err := a.db.Close(); err != nil {
-		return fmt.Errorf("failed to close DB connection: %s", err)
-	}
-
-	return nil
 }
