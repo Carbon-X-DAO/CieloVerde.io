@@ -8,6 +8,7 @@ import (
 	"context"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -51,6 +52,16 @@ func (server *Server) Shutdown(ctx context.Context) error {
 }
 
 func (server *Server) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+	if req.URL.Path == "/submit-form" && req.Method == http.MethodPost {
+		bs, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			log.Printf("failed to read /submit-form request body: %s", err)
+			res.WriteHeader(http.StatusInternalServerError)
+		}
+		log.Printf("someone sent us form data!!! %s", bs)
+		res.WriteHeader(http.StatusOK)
+		return
+	}
 	path := filepath.Join(server.root, req.URL.Path)
 	exists, err := fsutil.Exists(path)
 	if err != nil {

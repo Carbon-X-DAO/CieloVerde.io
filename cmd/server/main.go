@@ -78,6 +78,8 @@ func main() {
 		}
 	}
 
+	log.Printf("discovered working directory as: %s", root)
+	root += "/frontend/build"
 	srv := fileserver.New(root)
 
 	a := App{
