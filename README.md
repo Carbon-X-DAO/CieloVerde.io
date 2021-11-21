@@ -3,12 +3,14 @@ This repository hosts a webserver that connects to a `postgres` DB instance and
 stores information submitted to a form. So, there are a few dependencies.
 
 # Getting Started
-## `go` webserver
-If you have a `go` compiler installed then you can build and run the webserver
-by
+## React App
+The frontend is served from the build output of the React application stored in
+`/frontend`. The easiest way to build the frontend is to
 ```bash
-go build ./cmd/server && ./server
+yarn install
+yarn run build
 ```
+
 
 ## `postgres` DB instance
 You will need to install `postgres` and configure it. An installation from 
@@ -23,4 +25,11 @@ When you're all done you can
 ```bash
 pg_ctl -D db -l logfile stop
 rm logfile
+```
+
+## `go` webserver
+If you have a `go` compiler installed then you can build and run the webserver
+by
+```bash
+go build ./cmd/server && ./server
 ```
