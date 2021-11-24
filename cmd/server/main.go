@@ -83,7 +83,7 @@ func main() {
 	}
 
 	log.Printf("discovered working directory as: %s", root)
-	root += "/frontend/build"
+	root += "/result/static"
 	srv := fileserver.New(root, db)
 
 	killed := make(chan os.Signal)

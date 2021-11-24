@@ -15,7 +15,7 @@
 
           src = ./.;
 
-          vendorSha256 = "oKBUo+o3Sf2VBgLLtjmldhV0mWcpLJSVeyDScfSDPUc=";
+          vendorSha256 = "LNSLbLaLiKFD2tn5nyUfje/3m7NdHvjSh1zboPqSnO0=";
         };
       in
       rec {

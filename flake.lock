@@ -1,21 +1,6 @@
 {
   "nodes": {
-    "frontend": {
-      "inputs": {
-        "fu": "fu",
-        "nixpkgs": "nixpkgs"
-      },
-      "locked": {
-        "narHash": "sha256-SzjicPuUi6WaLGS3eCmDTjf5qGkOU1XboAoIz0LyR5k=",
-        "path": "./frontend",
-        "type": "path"
-      },
-      "original": {
-        "path": "./frontend",
-        "type": "path"
-      }
-    },
-    "fu": {
+    "flake-utils": {
       "locked": {
         "lastModified": 1637014545,
         "narHash": "sha256-26IZAc5yzlD9FlDT54io1oqG/bBoyka+FJk5guaX4x4=",
@@ -27,11 +12,25 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "bba5dcc8e0b20ab664967ad83d24d64cb64ec4f4",
         "type": "github"
       }
     },
-    "fu_2": {
+    "frontend": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "narHash": "sha256-YzJgGv0Kt+wRkuiuM/lqujYbU71GpTcENgeyTlrQ8Xk=",
+        "path": "./frontend",
+        "type": "path"
+      },
+      "original": {
+        "path": "./frontend",
+        "type": "path"
+      }
+    },
+    "fu": {
       "locked": {
         "lastModified": 1637014545,
         "narHash": "sha256-26IZAc5yzlD9FlDT54io1oqG/bBoyka+FJk5guaX4x4=",
@@ -65,11 +64,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1637155076,
-        "narHash": "sha256-26ZPNiuzlsnXpt55Q44+yzXvp385aNAfevzVEKbrU5Q=",
+        "lastModified": 1637595801,
+        "narHash": "sha256-LkIMwVFKCuEqidaUdg8uxwpESAXjsPo4oCz3eJ7RaRw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "715f63411952c86c8f57ab9e3e3cb866a015b5f2",
+        "rev": "263ef4cc4146c9fab808085487438c625d4426a9",
         "type": "github"
       },
       "original": {
@@ -82,7 +81,7 @@
     "root": {
       "inputs": {
         "frontend": "frontend",
-        "fu": "fu_2",
+        "fu": "fu",
         "nixpkgs": "nixpkgs_2"
       }
     }

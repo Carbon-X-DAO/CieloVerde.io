@@ -70,7 +70,7 @@ func (server *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch {
-	case r.URL.Path == "/submit-form" && r.Method == http.MethodPost:
+	case r.URL.Path == "/submit" && r.Method == http.MethodPost:
 		server.handleForm(w, r)
 	case isCodePath && r.Method == http.MethodGet:
 		server.handleCode(w, r)

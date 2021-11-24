@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
-	"encoding/json"
 	"fmt"
 	"image/png"
 	"io/ioutil"
@@ -15,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ajg/form"
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
@@ -71,7 +71,7 @@ func (server *Server) handleCode(w http.ResponseWriter, r *http.Request) {
 func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 	bs, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("failed to read /submit-form request body: %s", err)
+		log.Printf("failed to read /submit request body: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
@@ -80,19 +80,21 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if _, err = server.db.ExecContext(ctx, queryInsertFormRow, bs, time.Now()); err != nil {
-		log.Printf("failed to read /submit-form request body: %s", err)
+		log.Printf("failed to read /submit request body: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	var form formInfo
-	if err := json.NewDecoder(bytes.NewReader(bs)).Decode(&form); err != nil {
-		log.Printf("failed to decode JSON: %s", err)
+	var fi formInfo
+	dec :=form.NewDecoder(bytes.NewReader(bs))
+	dec.IgnoreUnknownKeys(true)
+	if err := dec.Decode(&fi); err != nil {
+		log.Printf("failed to decode form: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	hash := md5.Sum([]byte(form.Email))
+	hash := md5.Sum([]byte(fi.Email))
 
 	log.Printf("redirecting to /code/%x : len(hash) == %d", hash, len(hash))
 
