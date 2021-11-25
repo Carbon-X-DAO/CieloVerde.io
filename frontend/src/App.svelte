@@ -145,6 +145,7 @@ p {
 
 input[type=submit]:focus, input[type=submit]:active, input[type=submit]:hover {
 	background-color: #504534;
+	cursor: pointer;
 }
 
 @media (max-width: 500px) {
