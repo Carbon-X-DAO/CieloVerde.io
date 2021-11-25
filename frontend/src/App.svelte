@@ -110,7 +110,8 @@ select,input {
 
 select,::placeholder {
 	/*color: #666666;*/
-	color: rgb(102,102,102,.5);
+	color: rgb(102,102,102,.6);
+	font-weight: 800;
 	text-transform: uppercase;
 }
 
