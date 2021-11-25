@@ -3,6 +3,8 @@
 </script>
 <main>
 	<form action="/submit" method="POST">
+		<section>
+		<h3>Personal Information</h3>
 		<input type="text" id="fname" name="fname" placeholder="First name">
 		<input type="text" id="lname" name="lname1" placeholder="Last name 1">
 		<input type="text" id="lname" name="lname2" placeholder="Last name 2"><br>
@@ -24,6 +26,9 @@
 				{/if}
 			{/each}
 		</select><br>
+		</section>
+		<section>
+		<h3>Marijuana Consumption</h3>
 		<select name="daily_qty">
 			<option disabled selected hidden>Daily Quantity</option>
 			<option value="first">Option 1</option>
@@ -48,6 +53,7 @@
 		<p>
 		<input type="submit" value="Submit">
 		</p>
+		</section>
 	</form>
 </main>
 
@@ -56,5 +62,37 @@ main {
 	padding: 1em;
 	max-width: 1000px;
 	margin: 0 auto;
+	width: 85%;
+}
+
+h1, h2, h3 {
+	color: #666666;
+}
+
+form {
+	border: 2px solid #eeeeee;
+	border-radius: 2px;
+	padding: 10px;
+}
+
+section {
+	padding: 0px 10px;
+	margin: auto;
+}
+
+select,input {
+	border: 2px solid #BBBBBB;
+	margin: 0px 10px 10px 0px;
+	background-color: #E4E4E4;
+}
+
+select,input,::placeholder {
+	color: #666666;
+}
+
+input[type=submit] {
+	background-color: #726868;
+	border-radius: 6px;
+	color: #DDDDDD;
 }
 </style>
