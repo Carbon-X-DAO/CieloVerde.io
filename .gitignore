@@ -2,5 +2,5 @@
 /result
 /db
 /logfile
-/frontend/build
+/frontend/public/build/
 /frontend/node_modules
