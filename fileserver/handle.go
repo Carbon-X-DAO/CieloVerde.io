@@ -42,7 +42,7 @@ func (server *Server) handleCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	intsize := 128
+	intsize := 256
 	// Scale the barcode to the appropriate size
 	code, err = barcode.Scale(code, intsize, intsize)
 	if err != nil {
