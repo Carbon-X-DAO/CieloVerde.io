@@ -54,9 +54,13 @@
             ];
 
           shellHook = ''
+            cleanup() {
+              unlink node_modules
+            };
             export NODE_PATH="${nodeDependencies}/lib/node_modules";
             ln -s "${nodeDependencies}/lib/node_modules" ./node_modules;
             export PATH="${nodeDependencies}/bin:$PATH";
+            trap cleanup EXIT
           '';
         };
 
