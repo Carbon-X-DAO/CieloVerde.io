@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ajg/form"
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
+	"github.com/ajg/form"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
 )
@@ -86,7 +86,7 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var fi formInfo
-	dec :=form.NewDecoder(bytes.NewReader(bs))
+	dec := form.NewDecoder(bytes.NewReader(bs))
 	dec.IgnoreUnknownKeys(true)
 	if err := dec.Decode(&fi); err != nil {
 		log.Printf("failed to decode form: %s", err)
@@ -128,21 +128,36 @@ func (server *Server) handlePath(w http.ResponseWriter, r *http.Request) {
 
 		if isDir {
 			server.serveDir(path, w)
-		} else {
-			server.serveFile(path, w)
-		}
-	} else {
-		htmlFile := path + ".html"
-		exists, err = fsutil.Exists(htmlFile)
-		if err != nil {
-			writeErr(err, w)
 			return
 		}
 
-		if exists {
-			server.serveFile(htmlFile, w)
-		} else {
-			server.serveNotFound(w)
+		switch filepath.Ext(path) {
+		case ".css":
+			{
+				w.Header().Set("Content-Type", "text/css")
+			}
+		case ".js":
+			{
+				w.Header().Set("Content-Type", "application/javascript")
+			}
+
 		}
+
+		server.serveFile(path, w)
+		return
+	}
+
+	htmlFile := path + ".html"
+	exists, err = fsutil.Exists(htmlFile)
+	if err != nil {
+		writeErr(err, w)
+		return
+	}
+
+	if exists {
+		w.Header().Set("Content-Type", "text/html")
+		server.serveFile(htmlFile, w)
+	} else {
+		server.serveNotFound(w)
 	}
 }
