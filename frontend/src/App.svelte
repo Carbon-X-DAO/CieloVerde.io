@@ -5,20 +5,20 @@
 	<form action="/submit" method="POST">
 		<section>
 		<h3>Personal Information</h3>
-		<input type="text" id="fname" name="fname" placeholder="First name">
-		<input type="text" id="lname" name="lname1" placeholder="Last name 1">
-		<input type="text" id="lname" name="lname2" placeholder="Last name 2"><br>
-		<input type="text" id="lname" name="addr" placeholder="Postal Address"><br>
-		<input type="text" id="lname" name="id_no" placeholder="Identification Number"><br>
-		<input type="text" id="lname" name="cell" placeholder="Telephone Number">
-		<input type="text" id="lname" name="email" placeholder="Email Address"><br>
-		<select name="gender">
+		<input type="text" id="fname" name="fname" placeholder="First name" class="wide-input"><br>
+		<input type="text" id="lname" name="lname1" placeholder="Last name 1" class="narrow-input">
+		<input type="text" id="lname" name="lname2" placeholder="Last name 2" class="narrow-input"><br>
+		<input type="text" id="lname" name="addr" placeholder="Postal Address" class="narrow-input"s>
+		<input type="text" id="lname" name="id_no" placeholder="Ident. Number" class="narrow-input"><br>
+		<input type="text" id="lname" name="cell" placeholder="Telephone Number" class="wide-input">
+		<input type="text" id="lname" name="email" placeholder="Email Address" class="wide-input"><br>
+		<select name="gender" class="wide-select placeholder">
 			<option value="label" disabled selected hidden>Gender</option>
 			{#each genders as gender}
 			<option value={gender}>{gender}</option>
 			{/each}
 		</select>
-		<select name="age">
+		<select name="age" class="wide-select placeholder">
 			<option value="label" disabled selected hidden>Age</option>
 			{#each Array(100) as _, i}
 				{#if i>15}
@@ -29,22 +29,22 @@
 		</section>
 		<section>
 		<h3>Marijuana Consumption</h3>
-		<select name="daily_qty">
-			<option disabled selected hidden>Daily Quantity</option>
+		<select name="daily_qty" width="10px" class="narrow-select placeholder">
+			<option disabled selected hidden>Daily</option>
 			<option value="first">Option 1</option>
 			<option value="second">Option 2</option>
 			<option value="second">Option 3</option>
 			<option value="second">Option 4</option>
 		</select>
-		<select name="weekly_qty">
-			<option disabled selected hidden>Weekly Quantity</option>
+		<select name="weekly_qty" class="narrow-select placeholder">
+			<option disabled selected hidden>Weekly</option>
 			<option value="first">Option 1</option>
 			<option value="second">Option 2</option>
 			<option value="second">Option 3</option>
 			<option value="second">Option 4</option>
 		</select>
-		<select name="monthly_qty">
-			<option disabled selected hidden>Monthly Quantity</option>
+		<select name="monthly_qty" class="narrow-select placeholder">
+			<option disabled selected hidden>Monthly</option>
 			<option value="first">Option 1</option>
 			<option value="second">Option 2</option>
 			<option value="second">Option 3</option>
@@ -59,18 +59,19 @@
 
 <style>
 main {
-	padding: 1em;
-	max-width: 1000px;
+	max-width: 500px;
 	margin: 0 auto;
-	width: 85%;
+	font-size: 14px;
+	/*width: 85%;*/
 }
 
 h1, h2, h3 {
 	color: #666666;
+	text-align: center;
 }
 
 form {
-	border: 2px solid #eeeeee;
+	/*border: 2px solid #eeeeee;*/
 	border-radius: 2px;
 	padding: 10px;
 }
@@ -80,19 +81,95 @@ section {
 	margin: auto;
 }
 
-select,input {
-	border: 2px solid #BBBBBB;
-	margin: 0px 10px 10px 0px;
-	background-color: #E4E4E4;
+select.narrow-select {
+	width: 100px;
 }
 
-select,input,::placeholder {
-	color: #666666;
+select.wide-select {
+	width: 100px;
 }
+
+input.narrow-input {
+	width: 140px;
+}
+
+input.wide-input {
+	width: 200px;
+}
+
+select,input {
+	/*border: 2px solid #BBBBBB;*/
+	/*background-color: #E4E4E4;*/
+	background-color: white;
+	border: none;
+	border-bottom: 2px solid #BBBBBB;
+	margin: 0px 10px 10px 0px;
+	color: #444444;
+	margin-bottom: 30px;
+}
+
+select,::placeholder {
+	/*color: #666666;*/
+	color: rgb(102,102,102,.5);
+	text-transform: uppercase;
+}
+
+/*
+select,input,::placeholder{
+	font-size: 16px;
+}
+*/
+
+/*
+.placeholder,::placeholder {
+	font-size:12px;
+}
+*/
 
 input[type=submit] {
 	background-color: #726868;
-	border-radius: 6px;
+	border: none;
+	box-shadow: 3px 3px 1px #ccc;
+	text-shadow: none;
+	/*border-radius: 4px;*/
 	color: #DDDDDD;
+	height: 30px;
+	width: 80px;
+	margin: 0 auto;
+}
+
+p {
+	display: flex;
+}
+
+input[type=submit]:focus, input[type=submit]:active, input[type=submit]:hover {
+	background-color: #504534;
+}
+
+@media (max-width: 500px) {
+	select.narrow-select {
+		width: 100px;
+	}
+
+	select,input {
+		font-size: 13px;
+		margin-bottom: 20px;
+	}
+}
+
+@media (max-width: 400px) {
+	select.narrow-select {
+		width: 90px;
+	}
+
+	select,input,::placeholder {
+		font-size: 12px;
+	}
+}
+
+@media (max-width: 375px) {
+	select.narrow-select {
+		width: 150px;
+	}
 }
 </style>
