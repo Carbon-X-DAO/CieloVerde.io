@@ -6,6 +6,7 @@ Below code shamelessly taken from https://github.com/itsliamegan/fileserver
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"html/template"
@@ -21,15 +22,16 @@ import (
 )
 
 type Server struct {
-	root string
-	mux  *http.ServeMux
-	srv  *http.Server
-	db   *sql.DB
+	root      string
+	mux       *http.ServeMux
+	srv       *http.Server
+	db        *sql.DB
+	tlsConfig *tls.Config
 }
 
-func New(root string, db *sql.DB) *Server {
+func New(root string, tlsConfig *tls.Config, db *sql.DB) *Server {
 	mux := http.NewServeMux()
-	server := &Server{root: root, mux: mux, db: db}
+	server := &Server{root: root, mux: mux, db: db, tlsConfig: tlsConfig}
 	mux.Handle("/", server)
 
 	return server
@@ -37,14 +39,19 @@ func New(root string, db *sql.DB) *Server {
 
 func (server *Server) Listen(addr string) error {
 	srv := http.Server{
-		Addr:    addr,
-		Handler: server.mux,
+		Addr:      addr,
+		Handler:   server.mux,
+		TLSConfig: server.tlsConfig,
 	}
 
 	server.srv = &srv
 
-	if err := server.srv.ListenAndServe(); err != nil {
-		return err
+	// if err := server.srv.ListenAndServe(); err != nil {
+	// 	return err
+	// }
+
+	if err := server.srv.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
+		log.Printf("TLS server failed: %s", err)
 	}
 
 	return nil

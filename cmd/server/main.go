@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -23,15 +24,19 @@ import (
 )
 
 var (
-	flagAddress string
-	flagRoot    string
-	flagDBRole  string
+	flagAddress  string
+	flagRoot     string
+	flagDBRole   string
+	flagCertFile string
+	flagKeyFile  string
 )
 
 func init() {
 	flag.StringVar(&flagAddress, "address", "0.0.0.0:80", "address on which to listen")
 	flag.StringVar(&flagRoot, "root", "/result/static", "root path to site")
 	flag.StringVar(&flagDBRole, "role", "postgres", "postgres DB user role")
+	flag.StringVar(&flagCertFile, "cert", "example.crt", "TLS certificate file")
+	flag.StringVar(&flagKeyFile, "key", "example.key", "TLS certificate signing key file")
 	flag.Parse()
 }
 
@@ -98,7 +103,15 @@ func main() {
 	root += flagRoot
 	log.Printf("starting a fileserver for root path: %s", root)
 
-	srv := fileserver.New(root, db)
+	cert, err := tls.LoadX509KeyPair(flagCertFile, flagKeyFile)
+	if err != nil {
+		log.Fatalf("failed to load key pair: %s and %s: %s", flagCertFile, flagKeyFile, err)
+	}
+
+	tlsConfig := tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+	srv := fileserver.New(root, &tlsConfig, db)
 
 	killed := make(chan os.Signal)
 	signal.Notify(killed, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
