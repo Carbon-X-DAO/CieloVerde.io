@@ -28,8 +28,8 @@
 		bottom: 0px;
 		display: block;
 		z-index: -1;
-		width: 1000px;
-		height: 705px;
+		width: 800px;
+		height: 600px;
 		box-shadow: 0 0 10px 10px #86B27522 inset;
 		border-radius: 3px;
 	}
@@ -38,7 +38,7 @@
 		text-align: left;
 		color: #F5F5DCAA;
 		position: absolute;
-		top: 100px;
+		top: 0px;
 		left: 20px;
 		font-size: 72px;
 		font-weight: bold;
