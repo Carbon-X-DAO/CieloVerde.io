@@ -22,13 +22,26 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
+var (
+	flagAddress string
+	flagRoot    string
+	flagDBRole  string
+)
+
+func init() {
+	flag.StringVar(&flagAddress, "address", "0.0.0.0:80", "address on which to listen")
+	flag.StringVar(&flagRoot, "root", "/result/static", "root path to site")
+	flag.StringVar(&flagDBRole, "role", "postgres", "postgres DB user role")
+	flag.Parse()
+}
+
 func main() {
 	dbHost := "localhost"
 	dbPort := 5432
 	dbName := "postgres"
 	opts := "sslmode=disable"
 
-	db, err := sql.Open("postgres", fmt.Sprintf("postgres://%s:%d/%s?%s", dbHost, dbPort, dbName, opts))
+	db, err := sql.Open("postgres", fmt.Sprintf("postgres://%s@%s:%d/%s?%s", flagDBRole, dbHost, dbPort, dbName, opts))
 	if err != nil {
 		log.Fatalf("failed to initialize a postgres instance for DBMS configuration: %s", err)
 	}
@@ -45,7 +58,7 @@ func main() {
 
 	// switch to the qrinvite DB now that it has been created
 	dbName = "qrinvite"
-	db, err = sql.Open("postgres", fmt.Sprintf("postgres://%s:%d/%s?%s", dbHost, dbPort, dbName, opts))
+	db, err = sql.Open("postgres", fmt.Sprintf("postgres://%s@%s:%d/%s?%s", flagDBRole, dbHost, dbPort, dbName, opts))
 	if err != nil {
 		log.Fatalf("failed to initialize a postgres instance for app usage: %s", err)
 	}
@@ -82,8 +95,9 @@ func main() {
 		}
 	}
 
-	log.Printf("discovered working directory as: %s", root)
-	root += "/result/static"
+	root += flagRoot
+	log.Printf("starting a fileserver for root path: %s", root)
+
 	srv := fileserver.New(root, db)
 
 	killed := make(chan os.Signal)
@@ -103,9 +117,8 @@ func main() {
 		close(serverShutdown)
 	}()
 
-	addr := "0.0.0.0:8080"
-	log.Printf("starting the web server on port %s", addr)
-	if err := srv.Listen(addr); err != nil && err != http.ErrServerClosed {
+	log.Printf("starting the web server on address %s", flagAddress)
+	if err := srv.Listen(flagAddress); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("failed to serve: %s", err)
 	}
 
