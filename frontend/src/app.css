@@ -43,6 +43,8 @@ body::before {
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
+	max-width: 1024px;
+	margin: 0 auto;
 }
 
 h1,
