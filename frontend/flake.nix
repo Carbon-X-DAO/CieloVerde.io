@@ -38,7 +38,7 @@
             '';
 
             installPhase = ''
-              cp -r public $out/
+              cp -r build $out/
             '';
           };
         };
@@ -50,15 +50,17 @@
             in
             [
               p.nodePackages.npm
+              p.nodejs
               p.simple-http-server
             ];
 
           shellHook = ''
             cleanup() {
-              unlink node_modules
+              rm -rf node_modules
             };
             export NODE_PATH="${nodeDependencies}/lib/node_modules";
-            ln -s "${nodeDependencies}/lib/node_modules" ./node_modules;
+            mkdir node_modules;
+            ln -s "${nodeDependencies}"/lib/node_modules/* ./node_modules/;
             export PATH="${nodeDependencies}/bin:$PATH";
             trap cleanup EXIT
           '';
