@@ -7,6 +7,8 @@
 </svelte:head>
 
 <section>
+	<div class="bg-img"></div>
+	<h1>Plant<br>&nbsp;&nbsp;Medicine</h1>
 </section>
 
 <style>
@@ -18,8 +20,28 @@
 		flex: 1;
 	}
 
+	.bg-img {
+		background-image: url('./flower.jpg');
+		position: absolute;
+		right: 0;
+		/*top: 50px;*/
+		bottom: 0px;
+		display: block;
+		z-index: -1;
+		width: 1000px;
+		height: 705px;
+		box-shadow: 0 0 10px 10px #86B27522 inset;
+		border-radius: 3px;
+	}
+
 	h1 {
-		width: 100%;
+		text-align: left;
+		color: #F5F5DCAA;
+		position: absolute;
+		top: 100px;
+		left: 20px;
+		font-size: 72px;
+		font-weight: bold;
 	}
 
 	.welcome {

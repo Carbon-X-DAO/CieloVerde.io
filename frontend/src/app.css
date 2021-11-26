@@ -5,7 +5,7 @@
 		Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 	--font-mono: 'Fira Mono', monospace;
 	--pure-white: #ffffff;
-	--primary-color: #b9c6d2;
+	--primary-color: #CEE0C7;
 	--secondary-color: #d0dde9;
 	--tertiary-color: #edf0f8;
 	--accent-color: #8BB78A;
@@ -19,7 +19,7 @@
 body {
 	min-height: 100vh;
 	margin: 0;
-	background-color: var(--pure-white);
+	background-color: var(--primary-color);
 }
 
 body::before {

@@ -100,12 +100,17 @@ input.wide-input {
 select,input {
 	/*border: 2px solid #BBBBBB;*/
 	/*background-color: #E4E4E4;*/
-	background-color: white;
+	height: 20px;
+	background-color: var(--primary-color);
 	border: none;
 	border-bottom: 2px solid #BBBBBB;
 	margin: 0px 10px 10px 0px;
 	color: #444444;
 	margin-bottom: 30px;
+}
+
+input:focus-visible{
+	outline: none;
 }
 
 select,::placeholder {
