@@ -65,7 +65,7 @@ main {
 	/*width: 85%;*/
 }
 
-h1, h2, h3 {
+h3 {
 	color: #666666;
 	text-align: center;
 }
