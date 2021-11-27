@@ -1,6 +1,7 @@
 <script>
 	import Header from '$lib/header/Header.svelte';
 	import '../app.css';
+	let year = new Date().getFullYear()  // returns the current year
 </script>
 
 <Header />
@@ -10,6 +11,7 @@
 </main>
 
 <footer>
+	<p class="copyright">© CIELO VERDE {year}</p>
 </footer>
 
 <style>
