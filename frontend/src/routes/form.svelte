@@ -66,7 +66,7 @@ main {
 }
 
 h3 {
-	color: #666666;
+	color: #ffffff;
 	text-align: center;
 }
 
@@ -101,11 +101,11 @@ select,input {
 	/*border: 2px solid #BBBBBB;*/
 	/*background-color: #E4E4E4;*/
 	height: 20px;
-	background-color: var(--primary-color);
+	background-color: #ffffff;
 	border: none;
 	border-bottom: 2px solid #BBBBBB;
 	margin: 0px 10px 10px 0px;
-	color: #444444;
+	color: #ffffff;
 	margin-bottom: 30px;
 }
 

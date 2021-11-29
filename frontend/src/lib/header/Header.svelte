@@ -4,29 +4,51 @@
 </script>
 
 <header>
-	<div class="corner">
-		<a href="https://cieloverde.io">
-			<img src={logo} alt="Cielo Verde" />
-		</a>
-	</div>
-
-	<nav>
-		<ul>
-			<li class:active={$page.path === '/'}><a sveltekit:prefetch href="/">Home</a></li>
-			<li class:active={$page.path === '/about'}><a sveltekit:prefetch href="/about">About</a></li>
-			<li class:active={$page.path === '/form'}><a sveltekit:prefetch href="/form">Form</a></li>
-		</ul>
-	</nav>
-
-	<div class="corner">
-		<!-- TODO put something else here? github link? -->
+	<div class="container">
+		<div class="navbar">
+			<div class="corner navbar__logo">
+				<a href="https://cieloverde.io">
+					<img src={logo} alt="Cielo Verde" />
+				</a>
+			</div>
+		
+			<div class="navbar__nav">
+				<nav>
+					<ul>
+						<li class:active={$page.path === '/'}><a sveltekit:prefetch href="/">Home</a></li>
+						<li class:active={$page.path === '/about'}><a sveltekit:prefetch href="/about">About</a></li>
+						<li class:active={$page.path === '/form'}><a sveltekit:prefetch href="/form">Form</a></li>
+					</ul>
+				</nav>
+			
+				<div>
+					<!-- TODO put something else here? github link? -->
+					<a href="#" class="ghost-btn">Contact Us</a>
+				</div>
+			</div>
+		</div>
 	</div>
 </header>
 
 <style>
-	header {
+	.navbar__nav nav {
+		display: none;
+	}
+	@media (min-width: 600px) {
+		.navbar__nav nav {
+			display: block;
+		}
+	}
+
+	.navbar,
+	.navbar__nav {
 		display: flex;
 		justify-content: space-between;
+		align-items: center;
+	}
+
+	.navbar__nav nav + div {
+		margin-left: 1.5rem;
 	}
 
 	.corner {
@@ -86,10 +108,10 @@
 		display: flex;
 		height: 100%;
 		align-items: center;
-		padding: 0 1em;
+		padding: 0 1.5rem;
 		color: var(--heading-color);
 		font-weight: 700;
-		font-size: 0.8rem;
+		font-size: 0.9rem;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 		text-decoration: none;

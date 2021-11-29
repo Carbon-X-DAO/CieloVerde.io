@@ -11,7 +11,9 @@
 </main>
 
 <footer>
-	<p class="copyright">© CIELO VERDE {year}</p>
+	<div class="container">
+		<p class="copyright">© CIELO VERDE {year}</p>
+	</div>
 </footer>
 
 <style>
@@ -20,7 +22,6 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		padding: 1rem;
 		width: 100%;
 		box-sizing: border-box;
 	}
@@ -30,12 +31,17 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
-		padding: 40px;
+		background: #232323;
+    	border-top: 2px solid #55736c;
+	}
+
+	.copyright {
+		font-size: 0.7rem;
 	}
 
 	@media (min-width: 480px) {
 		footer {
-			padding: 40px 0;
+			padding: 10px 0;
 		}
 	}
 </style>

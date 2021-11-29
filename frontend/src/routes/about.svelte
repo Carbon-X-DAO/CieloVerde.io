@@ -41,7 +41,7 @@
 
 	p {
 		font-size: 18px;
-		color: #444444;
+		color: #ffffff;
 		font-weight: 800;
 	}
 </style>
