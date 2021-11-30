@@ -1,5 +1,6 @@
 <script context="module">
 	export const prerender = true;
+	import { page } from '$app/stores';
 </script>
 
 <svelte:head>
@@ -16,12 +17,91 @@
 			<p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ad vero ratione asperiores impedit voluptas iusto libero expedita placeat error soluta.</p>
 			<button class="ghost-btn">Read More</button>
 		</div>
-		
 	</div>
+
+	<ul class="cards">
+		<li class="card" class:active={$page.path === '/'}><a sveltekit:prefetch href="/">
+			<span class="fa-stack fa-2x">
+				<i class="fa fa-circle fa-stack-2x"></i>
+				<i class="fa fa-leaf fa-stack-1x fa-inverse"></i>
+			</span>
+			<p>Home <i class="fa fa-chevron-right"></i></p>
+		</a></li>
+		<li class="card" class:active={$page.path === '/about'}><a sveltekit:prefetch href="/about">
+			<span class="fa-stack fa-2x">
+				<i class="fa fa-circle fa-stack-2x"></i>
+				<i class="fa fa-globe fa-stack-1x fa-inverse"></i>
+			</span>
+			<p>About <i class="fa fa-chevron-right"></i></p>
+		</a></li>
+		<li class="card" class:active={$page.path === '/form'}><a sveltekit:prefetch href="/form">
+			<span class="fa-stack fa-2x">
+				<i class="fa fa-circle fa-stack-2x"></i>
+				<i class="fa fa-pagelines fa-stack-1x fa-inverse"></i>
+			</span>
+			<p>Form <i class="fa fa-chevron-right"></i></p>
+		</a></li>
+	</ul>
+
 </div>
 
 
 <style>
+	.cards {
+		padding-left: 0;
+		margin-top: 70px;
+	}
+	.card {
+		list-style: none;
+		text-align: center;
+		background-color: rgb(35 35 35);
+		margin-bottom: 15px;
+		border: 2px solid #ffffff;
+		border-radius: 6px;
+		cursor: pointer;
+		border-color: var(--primary-color);
+		/* box-shadow: 0px 11px 9px 0px var(--primary-color); */
+		transition: all 0.2s ease-in-out;
+	}
+	.card .fa-chevron-right {
+		font-size: 1rem;
+	}
+	
+	.card:hover {
+		background-color: var(--primary-color);
+		border-color: #fff;
+	}
+	.card:hover a {
+		transition: all 0.2s ease-in-out;
+		color: #383832;
+	}
+
+	.card a {
+		color: var(--primary-color);
+		display: block;
+		padding: 15px;
+		text-decoration: none;
+	}
+	.card p {
+		font-size: 20px;
+		text-transform: uppercase;
+		font-weight: 700;
+	}
+
+	@media (min-width: 620px) {
+		.cards {
+			display: flex;
+			justify-content: center;
+			margin: 0 -15px;
+			margin-top: 70px;
+		}
+		.card {
+			width: calc(100% / 3 - 30px);
+			margin: 0 15px;
+			background-color: rgb(35 35 35 / 79%);
+		}
+	}
+
 	section {
 		display: flex;
 		flex-direction: column;
@@ -76,6 +156,7 @@
 		background-size: cover;
 		height: inherit;
 		width: inherit;
+		background-position: bottom left;
 	}
 
 	@media (min-width: 320px) {

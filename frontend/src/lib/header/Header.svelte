@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/stores';
-	import logo from './cieloverde-logo.png';
+	import logo from '../../images/logos/w-logo4.png'
 </script>
 
 <header>
@@ -13,17 +13,16 @@
 			</div>
 		
 			<div class="navbar__nav">
-				<nav>
+				<!-- <nav>
 					<ul>
 						<li class:active={$page.path === '/'}><a sveltekit:prefetch href="/">Home</a></li>
 						<li class:active={$page.path === '/about'}><a sveltekit:prefetch href="/about">About</a></li>
 						<li class:active={$page.path === '/form'}><a sveltekit:prefetch href="/form">Form</a></li>
 					</ul>
-				</nav>
+				</nav> -->
 			
 				<div>
-					<!-- TODO put something else here? github link? -->
-					<a href="#" class="ghost-btn">Contact Us</a>
+					<a href="#" class="ghost-btn">About Us</a>
 				</div>
 			</div>
 		</div>
@@ -64,9 +63,9 @@
 		height: 100%;
 	}
 
-	.corner img {
-		width: 2em;
-		height: 2em;
+	.navbar__logo img {
+		width: 35px;
+		height: 35px;
 		object-fit: contain;
 	}
 
@@ -80,7 +79,6 @@
 		position: relative;
 		padding: 0;
 		margin: 0;
-		height: 3em;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -108,7 +106,7 @@
 		display: flex;
 		height: 100%;
 		align-items: center;
-		padding: 0 1.5rem;
+		padding: 1rem 1.5rem;
 		color: var(--heading-color);
 		font-weight: 700;
 		font-size: 0.9rem;

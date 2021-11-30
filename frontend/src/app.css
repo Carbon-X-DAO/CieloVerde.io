@@ -5,7 +5,8 @@
 		Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 	--font-mono: 'Fira Mono', monospace;
 	--pure-white: #ffffff;
-	--primary-color: #53716A;
+	/* --primary-color: #53716A; */
+	--primary-color: #86866C;
 	--secondary-color: #d0dde9;
 	--tertiary-color: #edf0f8;
 	--accent-color: #8BB78A;
@@ -67,6 +68,7 @@ body::before {
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
 	border: 2px solid var(--heading-color);
+	border-radius: 6px;
 	text-decoration: none !important;
 	background: transparent;
 	transition: color 0.2s linear, border-color 0.2s linear;
