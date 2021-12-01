@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/stores';
-	import logo from '../../images/logos/w-logo4.png'
+	import logo from '/static/images/logos/w-logo4.png'
 </script>
 
 <svelte:head>
