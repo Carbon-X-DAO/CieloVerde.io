@@ -151,7 +151,7 @@
 	}
 
 	.background {
-		background-image: url('./flower.jpg');
+		background-image: url('/static/images/background.jpg');
 		background-repeat: no-repeat;
 		background-size: cover;
 		height: inherit;
