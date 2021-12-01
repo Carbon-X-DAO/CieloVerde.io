@@ -102,24 +102,11 @@
 		}
 	}
 
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 1;
-	}
-
 	.banner__info {
 		max-width: 100%;
 		margin-top: 90px;
 	}
-	.banner__info h1,
-	.banner__info h2,
-	.banner__info h3,
-	.banner__info h4,
-	.banner__info h5,
-	.banner__info h6 {
+	.banner__info h1 {
 		margin-bottom: 0;
 	}
 
@@ -151,7 +138,7 @@
 	}
 
 	.background {
-		background-image: url('./flower.jpg');
+		background-image: url('/static/images/background.jpg');
 		background-repeat: no-repeat;
 		background-size: cover;
 		height: inherit;
