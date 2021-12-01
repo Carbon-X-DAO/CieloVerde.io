@@ -33,7 +33,7 @@
 				</nav> -->
 			
 				<div>
-					<a href="#" class="ghost-btn">About Us</a>
+					<a href="/about" class="ghost-btn">About Us</a>
 				</div>
 			</div>
 		</div>
@@ -41,24 +41,10 @@
 </header>
 
 <style>
-	.navbar__nav nav {
-		display: none;
-	}
-	@media (min-width: 600px) {
-		.navbar__nav nav {
-			display: block;
-		}
-	}
-
-	.navbar,
-	.navbar__nav {
+	.navbar {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-	}
-
-	.navbar__nav nav + div {
-		margin-left: 1.5rem;
 	}
 
 	.corner {
@@ -78,53 +64,6 @@
 		width: 35px;
 		height: 35px;
 		object-fit: contain;
-	}
-
-	nav {
-		display: flex;
-		justify-content: center;
-		--background: rgba(255, 255, 255, 0.7);
-	}
-
-	ul {
-		position: relative;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		list-style: none;
-	}
-
-	li {
-		position: relative;
-		height: 100%;
-	}
-
-	li.active::before {
-		--size: 6px;
-		content: '';
-		width: 0;
-		height: 0;
-		position: absolute;
-		top: 0;
-		left: calc(50% - var(--size));
-		border: var(--size) solid transparent;
-		border-top: var(--size) solid var(--accent-color);
-	}
-
-	nav a {
-		display: flex;
-		height: 100%;
-		align-items: center;
-		padding: 1rem 1.5rem;
-		color: var(--heading-color);
-		font-weight: 700;
-		font-size: 0.9rem;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		text-decoration: none;
-		transition: color 0.2s linear;
 	}
 
 	a:hover {
