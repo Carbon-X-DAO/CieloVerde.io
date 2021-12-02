@@ -43,10 +43,15 @@
 </header>
 
 <style>
+	header {
+		position: relative;
+		z-index: 2;
+	}
 	.navbar {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		padding-top: 3px;
 	}
 
 	.corner {

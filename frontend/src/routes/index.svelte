@@ -14,7 +14,7 @@
 		</div>
 		<div class="banner__info">
 			<h1>Plant<br>Medicine</h1>
-			<p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ad vero ratione asperiores impedit voluptas iusto libero expedita placeat error soluta.</p>
+			<p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ex, dolor. Perspiciatis possimus, quod ad est, impedit totam tempora odio ea, vel id suscipit architecto quos mollitia deleniti. Nisi culpa non ipsam. Velit dicta natus hic dolorem repellendus vitae ad exercitationem?</p>
 			<button class="ghost-btn">Read More</button>
 		</div>
 	</div>
@@ -22,24 +22,21 @@
 	<ul class="cards">
 		<li class="card" class:active={$page.path === '/'}><a sveltekit:prefetch href="/">
 			<span class="fa-stack fa-2x">
-				<i class="fa fa-circle fa-stack-2x"></i>
-				<i class="fa fa-leaf fa-stack-1x fa-inverse"></i>
+				<i class="fa fa-leaf fa-stack-1x"></i>
 			</span>
-			<p>Home <i class="fa fa-chevron-right"></i></p>
+			<p>Home</p>
 		</a></li>
 		<li class="card" class:active={$page.path === '/about'}><a sveltekit:prefetch href="/about">
 			<span class="fa-stack fa-2x">
-				<i class="fa fa-circle fa-stack-2x"></i>
-				<i class="fa fa-globe fa-stack-1x fa-inverse"></i>
+				<i class="fa fa-globe fa-stack-1x"></i>
 			</span>
-			<p>About <i class="fa fa-chevron-right"></i></p>
+			<p>About</p>
 		</a></li>
 		<li class="card" class:active={$page.path === '/form'}><a sveltekit:prefetch href="/form">
 			<span class="fa-stack fa-2x">
-				<i class="fa fa-circle fa-stack-2x"></i>
-				<i class="fa fa-pagelines fa-stack-1x fa-inverse"></i>
+				<i class="fa fa-pagelines fa-stack-1x"></i>
 			</span>
-			<p>Form <i class="fa fa-chevron-right"></i></p>
+			<p>Form</p>
 		</a></li>
 	</ul>
 
@@ -49,56 +46,62 @@
 <style>
 	.cards {
 		padding-left: 0;
-		margin-top: 70px;
+		margin-top: 100px;
 	}
 	.card {
 		list-style: none;
 		text-align: center;
-		background-color: rgb(35 35 35);
+		background-color: #ffffff;
 		margin-bottom: 15px;
 		border: 2px solid #ffffff;
-		border-radius: 6px;
+		border-radius: 12px;
 		cursor: pointer;
-		border-color: var(--primary-color);
-		/* box-shadow: 0px 11px 9px 0px var(--primary-color); */
+		border-color: #ffffff;
 		transition: all 0.2s ease-in-out;
 	}
-	.card .fa-chevron-right {
-		font-size: 1rem;
-	}
 
-	.card:hover {
-		background-color: var(--primary-color);
-		border-color: #fff;
-	}
-	.card:hover a {
-		transition: all 0.2s ease-in-out;
-		color: #383832;
-	}
-
-	.card a {
-		color: var(--primary-color);
-		display: block;
-		padding: 15px;
-		text-decoration: none;
-	}
 	.card p {
 		font-size: 20px;
 		text-transform: uppercase;
 		font-weight: 700;
+		color: #252525;
+		letter-spacing: 1px;
+		margin: 0;
 	}
+
+	.card .fa-stack {
+		margin-top: -12px;
+		margin-bottom: -10px;
+	}
+
+	.card:hover {
+		background-color: var(--primary-color);
+		/* border-color: #fff; */
+	}
+	.card:hover a,
+	.card:hover p {
+		transition: all 0.2s ease-in-out;
+		color: #ffffff;
+	}
+
+	.card a {
+		color: #232323;
+		display: block;
+		padding: 18px;
+		text-decoration: none;
+	}
+
 
 	@media (min-width: 620px) {
 		.cards {
 			display: flex;
 			justify-content: center;
 			margin: 0 -15px;
-			margin-top: 70px;
+			margin-top: 90px;
 		}
 		.card {
 			width: calc(100% / 3 - 30px);
 			margin: 0 15px;
-			background-color: rgb(35 35 35 / 79%);
 		}
 	}
 
@@ -112,13 +115,12 @@
 
 	.banner__info .ghost-btn {
 		margin-top: 24px;
-		padding: 0.8rem 2rem;
 	}
 
 	.banner__img {
 		position: absolute;
 		right: 0;
-		top: -50px;
+		top: -51px;
 		display: block;
 		z-index: -1;
 		width: 100%;
@@ -156,7 +158,7 @@
 	}
 	@media (min-width: 600px) {
 		.banner__info {
-			max-width: 50%;
+			max-width: calc(66.6% - 15px);
 			margin-top: 120px;
 		}
 		h1 {

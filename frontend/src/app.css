@@ -14,7 +14,6 @@
 	--text-color: #ffffff;
 	--background-without-opacity: rgba(255, 255, 255, 0.7);
 	--column-width: 42rem;
-	--column-margin-top: 4rem;
 }
 
 * {
@@ -61,7 +60,7 @@ body::before {
 
 .ghost-btn {
 	align-items: center;
-	padding: 0.5rem 1.4rem;
+	padding: 0.55rem 1.4rem;
 	color: var(--heading-color);
 	font-weight: 700;
 	font-size: 0.9rem;
@@ -76,6 +75,7 @@ body::before {
 }
 .ghost-btn:hover {
 	border-color: var(--accent-color);
+	color: var(--pure-white) !important;
 }
 
 h1,
