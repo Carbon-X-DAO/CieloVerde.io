@@ -1,9 +1,21 @@
 <script>
-	let genders = ["Male", "Female", "Trans"]
+    import { onMount } from 'svelte';
+    let root;
+    let genders = ["Male", "Female", "Trans"];
+    let dropdownNames = ["gender", "age", "daily_qty", "weekly_qty", "monthly_qty"]
+
+    onMount(() => {
+	    for (name of dropdownNames) {
+		    let selection = root.querySelector(`[name="${name}"]`);
+		    selection.addEventListener('change', () => {
+			    selection.classList.remove("select-placeholder")
+			})
+		}
+	});
 </script>
 <main>
 	<div class="content form">
-		<form action="/submit" method="POST">
+		<form action="/submit" method="POST" bind:this={root}>
 			<section>
 			<h2>Personal Information</h2>
 			<input type="text" id="fname" name="fname" placeholder="First name" class="wide-input">
