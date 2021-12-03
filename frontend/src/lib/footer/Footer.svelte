@@ -30,11 +30,16 @@
 	footer .col {
 		margin-bottom: 10px;
 	}
+	footer .col:last-child {
+		margin-bottom: 0;
+	}
 
 	footer .col a {
 		display: flex;
 		align-items: center;
 		line-height: 1.4;
+		padding: 6px;
+    	padding-left: 0;
 	}
 	.col a .fa {
 		margin-right: 5px;
