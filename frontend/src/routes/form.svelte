@@ -167,6 +167,10 @@ select:focus {
 	opacity: 0.8;
 }
 
+option {
+	color: #000 !important;
+}
+
 .btn-submit-wrap {
 	display: flex;
 	justify-content: flex-end;
