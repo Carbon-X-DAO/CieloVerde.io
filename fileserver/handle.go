@@ -119,6 +119,7 @@ func (server *Server) handlePath(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Add("Cache-Control", "max-age=86400,s-maxage=86400")
 	if exists {
 		isDir, err := fsutil.IsDir(path)
 		if err != nil {
@@ -140,7 +141,6 @@ func (server *Server) handlePath(w http.ResponseWriter, r *http.Request) {
 			{
 				w.Header().Set("Content-Type", "application/javascript")
 			}
-
 		}
 
 		server.serveFile(path, w)
