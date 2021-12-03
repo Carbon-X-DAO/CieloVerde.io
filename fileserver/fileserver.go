@@ -22,43 +22,46 @@ import (
 )
 
 type Server struct {
-	root      string
-	mux       *http.ServeMux
-	srv       *http.Server
-	db        *sql.DB
-	tlsConfig *tls.Config
+	root string
+	*http.Server
+	db *sql.DB
+	// tlsConfig *tls.Config
 }
 
-func New(root string, tlsConfig *tls.Config, db *sql.DB) *Server {
+// tlsConfig may be nil, in which case an HTTP server will serve without TLS
+func New(addr string, root string, tlsConfig *tls.Config, db *sql.DB) *Server {
+	server := &Server{root: root, db: db}
+
 	mux := http.NewServeMux()
-	server := &Server{root: root, mux: mux, db: db, tlsConfig: tlsConfig}
 	mux.Handle("/", server)
+
+	httpServer := http.Server{
+		Addr:      addr,
+		TLSConfig: tlsConfig,
+		Handler:   mux,
+	}
+
+	server.Server = &httpServer
 
 	return server
 }
 
-func (server *Server) Listen(addr string) error {
-	srv := http.Server{
-		Addr:      addr,
-		Handler:   server.mux,
-		TLSConfig: server.tlsConfig,
-	}
-
-	server.srv = &srv
-
-	// if err := server.srv.ListenAndServe(); err != nil {
-	// 	return err
-	// }
-
-	if err := server.srv.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
-		log.Printf("TLS server failed: %s", err)
+func (server *Server) Listen() error {
+	if server.Server.TLSConfig != nil {
+		if err := server.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
+			return fmt.Errorf("TLS HTTP server failed: %s", err)
+		}
+	} else {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			return fmt.Errorf("HTTP server failed: %s", err)
+		}
 	}
 
 	return nil
 }
 
 func (server *Server) Shutdown(ctx context.Context) error {
-	if err := server.srv.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
+	if err := server.Server.Shutdown(ctx); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("failed to shut shut down HTTP server: %s", err)
 	}
 	if err := server.db.Close(); err != nil {
@@ -69,6 +72,8 @@ func (server *Server) Shutdown(ctx context.Context) error {
 }
 
 func (server *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Printf("handling a request at path: %s", r.URL.Path)
+
 	isCodePath, err := regexp.MatchString(`^\/code\/[a-f0-9]{32}$`, r.URL.Path)
 	if err != nil {
 		log.Printf("failed to compare path to regex: %s", err)

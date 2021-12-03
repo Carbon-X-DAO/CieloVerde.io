@@ -101,17 +101,26 @@ func main() {
 	}
 
 	root += flagRoot
+
+	var tlsConfig *tls.Config
+	if flagCertFile != "" && flagKeyFile != "" {
+		log.Printf("cert file is empty: %v", flagCertFile == "")
+		log.Printf("key file is empty: %v", flagKeyFile == "")
+		cert, err := tls.LoadX509KeyPair(flagCertFile, flagKeyFile)
+		if err != nil {
+			log.Fatalf("failed to load key pair: %s and %s: %s", flagCertFile, flagKeyFile, err)
+		}
+		tlsConfig = &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		}
+	}
+
+	if flagCertFile != "" || flagKeyFile != "" {
+		log.Fatal("both cert file and key file must be either non-empty or empty")
+	}
+
 	log.Printf("starting a fileserver for root path: %s", root)
-
-	cert, err := tls.LoadX509KeyPair(flagCertFile, flagKeyFile)
-	if err != nil {
-		log.Fatalf("failed to load key pair: %s and %s: %s", flagCertFile, flagKeyFile, err)
-	}
-
-	tlsConfig := tls.Config{
-		Certificates: []tls.Certificate{cert},
-	}
-	srv := fileserver.New(root, &tlsConfig, db)
+	srv := fileserver.New(flagAddress, root, tlsConfig, db)
 
 	killed := make(chan os.Signal)
 	signal.Notify(killed, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -131,7 +140,7 @@ func main() {
 	}()
 
 	log.Printf("starting the web server on address %s", flagAddress)
-	if err := srv.Listen(flagAddress); err != nil && err != http.ErrServerClosed {
+	if err := srv.Listen(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("failed to serve: %s", err)
 	}
 
