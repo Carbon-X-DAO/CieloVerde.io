@@ -115,7 +115,8 @@ func main() {
 		}
 	}
 
-	if flagCertFile != "" || flagKeyFile != "" {
+	// XOR trick from https://stackoverflow.com/a/23025720
+	if (flagCertFile != "") != (flagKeyFile != "") {
 		log.Fatal("both cert file and key file must be either non-empty or empty")
 	}
 
