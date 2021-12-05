@@ -15,7 +15,6 @@
 		<div class="banner__info">
 			<h1>Plant<br>Medicine</h1>
 			<p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ex, dolor. Perspiciatis possimus, quod ad est, impedit totam tempora odio ea, vel id suscipit architecto quos mollitia deleniti. Nisi culpa non ipsam. Velit dicta natus hic dolorem repellendus vitae ad exercitationem?</p>
-			<button class="ghost-btn">Read More</button>
 		</div>
 	</div>
 
