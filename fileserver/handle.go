@@ -9,8 +9,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
@@ -28,51 +28,6 @@ type formInfo struct {
 	Email   string
 	Phone   string
 	Message string
-}
-
-func (server *Server) handleTicket(w http.ResponseWriter, r *http.Request) {
-	matches := reTicket.FindStringSubmatch(r.URL.Path)
-	names := reTicket.SubexpNames()
-
-	var hash string
-
-	for i, match := range matches {
-		if names[i] == "code" && i == 1 {
-			hash = match
-		}
-	}
-
-	code, err := qr.Encode(string(hash), qr.L, qr.Auto)
-	if err != nil {
-		log.Printf("failed to encode hash as QR code: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	intsize := 256
-	// Scale the barcode to the appropriate size
-	code, err = barcode.Scale(code, intsize, intsize)
-	if err != nil {
-		log.Printf("failed to scale QR code: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	buffer := new(bytes.Buffer)
-	if err := png.Encode(buffer, code); err != nil {
-		log.Printf("failed to encode QR code as PNG: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "image/png")
-	w.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
-
-	if _, err := w.Write(buffer.Bytes()); err != nil {
-		log.Printf("failed to write HTTP response: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 }
 
 func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
@@ -100,20 +55,70 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	hash := md5.Sum([]byte(fi.Email))
+	hashString := string(fmt.Sprintf("%x", hash))
 
-	w.Header().Set("Location", fmt.Sprintf("/code/%x", hash))
+	go saveQRCodePNG(server.ticketsDir, hashString)
 
-	w.WriteHeader(http.StatusSeeOther)
-
-	if _, err := w.Write(nil); err != nil {
-		log.Printf("failed to write HTTP response: %s", err)
+	if _, err := w.Write([]byte(fmt.Sprintf(ticketHTMLTemplate, ticketFilename(server.ticketsDir, hashString)))); err != nil {
+		log.Printf("failed to execute ticket template: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
 
-func (server *Server) handlePath(w http.ResponseWriter, r *http.Request) {
-	path := filepath.Join(server.root, r.URL.Path)
+func (server *Server) handleFrontendPath(w http.ResponseWriter, r *http.Request) {
+	path := filepath.Join(server.frontendRoot, r.URL.Path)
+	exists, err := fsutil.Exists(path)
+	if err != nil {
+		writeErr(err, w)
+		return
+	}
+
+	w.Header().Add("Cache-Control", "max-age=86400,s-maxage=86400")
+	if exists {
+		isDir, err := fsutil.IsDir(path)
+		if err != nil {
+			writeErr(err, w)
+			return
+		}
+
+		if isDir {
+			server.serveDir(path, w)
+			return
+		}
+
+		switch filepath.Ext(path) {
+		case ".css":
+			{
+				w.Header().Set("Content-Type", "text/css")
+			}
+		case ".js":
+			{
+				w.Header().Set("Content-Type", "application/javascript")
+			}
+		}
+
+		server.serveFile(path, w)
+		return
+	}
+
+	htmlFile := path + ".html"
+	exists, err = fsutil.Exists(htmlFile)
+	if err != nil {
+		writeErr(err, w)
+		return
+	}
+
+	if exists {
+		w.Header().Set("Content-Type", "text/html")
+		server.serveFile(htmlFile, w)
+	} else {
+		server.serveNotFound(w)
+	}
+}
+
+func (server *Server) handleTicketsPath(w http.ResponseWriter, r *http.Request) {
+	path := filepath.Join("./", r.URL.Path)
 	exists, err := fsutil.Exists(path)
 	if err != nil {
 		writeErr(err, w)
@@ -165,4 +170,37 @@ func (server *Server) handlePath(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) handleQRInbound(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/form", http.StatusSeeOther)
+}
+
+func saveQRCodePNG(dir, hash string) {
+	code, err := qr.Encode(string(hash), qr.L, qr.Auto)
+	if err != nil {
+		log.Printf("failed to encode hash as QR code: %s\n", err)
+		return
+	}
+
+	intsize := 256
+	// Scale the barcode to the appropriate size
+	code, err = barcode.Scale(code, intsize, intsize)
+	if err != nil {
+		log.Printf("failed to scale QR code: %s\n", err)
+		return
+	}
+
+	filelocation := ticketFilename(dir, hash)
+	f, err := os.Create(filelocation)
+	if err != nil {
+		log.Printf("failed to create file %s: %s", filelocation, err)
+		return
+	}
+
+	if err := png.Encode(f, code); err != nil {
+		log.Printf("failed to write QR code as PNG to file %s: %s", filelocation, err)
+		return
+	}
+}
+
+func ticketFilename(dir, name string) string {
+	filename := fmt.Sprintf("%s.png", name)
+	return filepath.Join(dir, filename)
 }

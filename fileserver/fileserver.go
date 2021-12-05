@@ -16,24 +16,29 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
 	"github.com/Carbon-X-DAO/QRInvite/templates"
 )
 
-var reTicket = regexp.MustCompile(`^\/code\/(?P<code>[a-fA-F0-9]{32})$`)
+// var reTicket = regexp.MustCompile(`^\/code\/(?P<code>[a-fA-F0-9]{32})$`)
 var reInboundQR = regexp.MustCompile(`^\/qrcodes\/(?P<code>[0-9])$`)
 
 type Server struct {
-	root string
+	frontendRoot string
 	*http.Server
-	db *sql.DB
-	// tlsConfig *tls.Config
+	db         *sql.DB
+	ticketsDir string
 }
 
 // tlsConfig may be nil, in which case an HTTP server will serve without TLS
-func New(addr string, root string, tlsConfig *tls.Config, db *sql.DB) *Server {
-	server := &Server{root: root, db: db}
+func New(addr string, ticketsDir string, frontendRoot string, tlsConfig *tls.Config, db *sql.DB) *Server {
+	server := &Server{
+		frontendRoot: frontendRoot,
+		db:           db,
+		ticketsDir:   ticketsDir,
+	}
 
 	mux := http.NewServeMux()
 	mux.Handle("/", server)
@@ -80,10 +85,10 @@ func (server *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		server.handleQRInbound(w, r)
 	case r.URL.Path == "/submit" && r.Method == http.MethodPost:
 		server.handleForm(w, r)
-	case reTicket.MatchString(r.URL.Path) && r.Method == http.MethodGet:
-		server.handleTicket(w, r)
+	case strings.Contains(r.URL.Path, "tickets"):
+		server.handleTicketsPath(w, r)
 	default:
-		server.handlePath(w, r)
+		server.handleFrontendPath(w, r)
 	}
 }
 
@@ -111,7 +116,7 @@ func (server *Server) serveDir(dir string, res http.ResponseWriter) {
 	if exists {
 		server.serveFile(indexFile, res)
 	} else {
-		listing, err := fsutil.List(dir, server.root)
+		listing, err := fsutil.List(dir, server.frontendRoot)
 		if err != nil {
 			writeErr(err, res)
 			return
