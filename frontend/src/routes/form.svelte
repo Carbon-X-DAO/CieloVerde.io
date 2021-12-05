@@ -40,9 +40,10 @@
 				{/each}
 			</select>
 			</section>
+
 			<section>
 			<h2>Marijuana Consumption</h2>
-			<select name="daily_qty" width="10px" class="narrow-select select select-placeholder">
+			<select name="daily_qty" class="narrow-select select select-placeholder">
 				<option disabled selected hidden>Daily</option>
 				<option value="first">Option 1</option>
 				<option value="second">Option 2</option>
@@ -64,6 +65,20 @@
 				<option value="second">Option 4</option>
 			</select>
 			
+			<div class="checkbox">
+				<input type="checkbox" id="newsletter" name="newsletter" value="newsletter">
+				<label for="newsletter">Newsletter</label>
+			</div>
+			<div class="checkbox">
+				<input type="checkbox" id="giftbox" name="giftbox" value="giftbox">
+				<label for="giftbox">Gift Box</label>
+			</div>
+
+			<div class="checkbox">
+				<input type="checkbox" id="authorization" name="authorization" value="authorization">
+				<label for="authorization">Authorization</label>
+			</div>
+
 			<div class="btn-submit-wrap">
 				<input type="submit" value="Submit" class="btn-filled">
 			</div>
@@ -140,7 +155,15 @@ select::-ms-expand {
   text-shadow: 0 0 0 #000;
 }
 
-input, select {
+input[type="checkbox"] {
+	background: #ccc;
+	box-sizing: border-box;
+	height: 20px;
+	width: 20px;
+	cursor: pointer;
+}
+
+input[type="text"], input[type="submit"], select {
 	background-color: transparent;
 	border: none;
 	border: 2px solid #fff;
@@ -193,6 +216,12 @@ option {
 	background: #fff;
 	color: #000;
 	width: 160px;
+}
+
+.checkbox {
+	width:100%;
+	color: white;
+	margin-bottom:10px;
 }
 
 @media (min-width: 620px) {
