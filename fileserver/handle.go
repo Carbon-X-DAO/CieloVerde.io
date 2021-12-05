@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
@@ -31,9 +30,17 @@ type formInfo struct {
 	Message string
 }
 
-func (server *Server) handleCode(w http.ResponseWriter, r *http.Request) {
-	parts := strings.Split(r.URL.Path, "/code/")
-	hash := parts[1]
+func (server *Server) handleTicket(w http.ResponseWriter, r *http.Request) {
+	// parts := strings.Split(r.URL.Path, "/code/")
+
+	hash := reTicket.SubexpNames()[0][0]
+	// matches := reTicket.FindStringSubmatch("/code/0123456789ABCDEF0123456789abcdef")
+	// names := reTicket.SubexpNames()
+	// for i, match := range matches {
+	// 	if i != 0 {
+	// 		fmt.Println(names[i], match)
+	// 	}
+	// }
 
 	code, err := qr.Encode(string(hash), qr.L, qr.Auto)
 	if err != nil {
@@ -160,4 +167,8 @@ func (server *Server) handlePath(w http.ResponseWriter, r *http.Request) {
 	} else {
 		server.serveNotFound(w)
 	}
+}
+
+func (server *Server) handleQRInbound(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/form", http.StatusSeeOther)
 }

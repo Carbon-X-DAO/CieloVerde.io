@@ -21,6 +21,9 @@ import (
 	"github.com/Carbon-X-DAO/QRInvite/templates"
 )
 
+var reTicket = regexp.MustCompile(`^\/code\/(?P<code>[a-fA-F0-9]{32})$`)
+var reInboundQR = regexp.MustCompile(`^/qrcodes/(?P<code>[0-9])$`)
+
 type Server struct {
 	root string
 	*http.Server
@@ -72,20 +75,13 @@ func (server *Server) Shutdown(ctx context.Context) error {
 }
 
 func (server *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log.Printf("handling a request at path: %s", r.URL.Path)
-
-	isCodePath, err := regexp.MatchString(`^\/code\/[a-f0-9]{32}$`, r.URL.Path)
-	if err != nil {
-		log.Printf("failed to compare path to regex: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
 	switch {
+	case reInboundQR.MatchString(r.URL.Path) && r.Method == http.MethodGet:
+		server.handleQRInbound(w, r)
 	case r.URL.Path == "/submit" && r.Method == http.MethodPost:
 		server.handleForm(w, r)
-	case isCodePath && r.Method == http.MethodGet:
-		server.handleCode(w, r)
+	case reTicket.MatchString(r.URL.Path) && r.Method == http.MethodGet:
+		server.handleTicket(w, r)
 	default:
 		server.handlePath(w, r)
 	}

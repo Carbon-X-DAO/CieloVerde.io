@@ -21,7 +21,7 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "narHash": "sha256-Tt+5gVjCnzWvoY508Z4110iWY4J8hnYxdXvx7Qx/9Ss=",
+        "narHash": "sha256-66lFQQb3SyrMbvQCkSoxPkrAs0BAgtcr4D6jfFgYMM0=",
         "path": "./frontend",
         "type": "path"
       },
