@@ -31,16 +31,16 @@ type formInfo struct {
 }
 
 func (server *Server) handleTicket(w http.ResponseWriter, r *http.Request) {
-	// parts := strings.Split(r.URL.Path, "/code/")
+	matches := reTicket.FindStringSubmatch(r.URL.Path)
+	names := reTicket.SubexpNames()
 
-	hash := reTicket.SubexpNames()[0][0]
-	// matches := reTicket.FindStringSubmatch("/code/0123456789ABCDEF0123456789abcdef")
-	// names := reTicket.SubexpNames()
-	// for i, match := range matches {
-	// 	if i != 0 {
-	// 		fmt.Println(names[i], match)
-	// 	}
-	// }
+	var hash string
+
+	for i, match := range matches {
+		if names[i] == "code" && i == 1 {
+			hash = match
+		}
+	}
 
 	code, err := qr.Encode(string(hash), qr.L, qr.Auto)
 	if err != nil {
@@ -82,8 +82,6 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	log.Printf("someone sent us form data!!! %s", bs)
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if _, err = server.db.ExecContext(ctx, queryInsertFormRow, bs, time.Now()); err != nil {
@@ -103,8 +101,6 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 
 	hash := md5.Sum([]byte(fi.Email))
 
-	log.Printf("redirecting to /code/%x : len(hash) == %d", hash, len(hash))
-
 	w.Header().Set("Location", fmt.Sprintf("/code/%x", hash))
 
 	w.WriteHeader(http.StatusSeeOther)
@@ -114,8 +110,6 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	log.Printf("successfully returned response to form!!!")
 }
 
 func (server *Server) handlePath(w http.ResponseWriter, r *http.Request) {

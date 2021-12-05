@@ -22,7 +22,7 @@ import (
 )
 
 var reTicket = regexp.MustCompile(`^\/code\/(?P<code>[a-fA-F0-9]{32})$`)
-var reInboundQR = regexp.MustCompile(`^/qrcodes/(?P<code>[0-9])$`)
+var reInboundQR = regexp.MustCompile(`^\/qrcodes\/(?P<code>[0-9])$`)
 
 type Server struct {
 	root string
