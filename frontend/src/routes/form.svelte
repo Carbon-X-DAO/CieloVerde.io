@@ -1,7 +1,7 @@
 <script>
     import { onMount } from 'svelte';
     let root;
-    let genders = ["Male", "Female", "Trans"];
+    let genders = ["Male", "Female", "Other"];
     let dropdownNames = ["gender", "age", "daily_qty", "weekly_qty", "monthly_qty"]
 
     onMount(() => {
@@ -18,13 +18,13 @@
 		<form action="/submit" method="POST" bind:this={root}>
 			<section>
 			<h2>Personal Information</h2>
-			<input type="text" id="fname" name="fname" placeholder="First name" class="wide-input">
-			<input type="text" id="lname" name="lname1" placeholder="Last name 1" class="narrow-input">
+			<input type="text" id="fname" name="fname" placeholder="First name *" class="wide-input" required>
+			<input type="text" id="lname" name="lname1" placeholder="Last name 1 *" class="narrow-input" required>
 			<input type="text" id="lname" name="lname2" placeholder="Last name 2" class="narrow-input">
 			<input type="text" id="lname" name="addr" placeholder="Postal Address" class="narrow-input">
-			<input type="text" id="lname" name="id_no" placeholder="Ident. Number" class="narrow-input">
-			<input type="text" id="lname" name="cell" placeholder="Telephone Number" class="wide-input">
-			<input type="text" id="lname" name="email" placeholder="Email Address" class="wide-input">
+			<input type="text" id="lname" name="id_no" placeholder="Identification Number *" class="narrow-input" required>
+			<input type="text" id="lname" name="cell" pattern="3[0-9]{'{'}9{'}'}" placeholder="Telephone Number (3XXXXXXXXXX)" class="wide-input">
+			<input type="text" id="lname" name="email" placeholder="Email Address *" class="wide-input" required>
 			<select name="gender" class="narrow-input select select-placeholder">
 				<option value="label" disabled selected hidden>Gender</option>
 				{#each genders as gender}
@@ -75,8 +75,8 @@
 			</div>
 
 			<div class="checkbox">
-				<input type="checkbox" id="authorization" name="authorization" value="authorization">
-				<label for="authorization">Authorization</label>
+				<input type="checkbox" id="authorization" name="authorization" value="authorization" required>
+				<label for="authorization">Authorization *</label>
 			</div>
 
 			<div class="btn-submit-wrap">
