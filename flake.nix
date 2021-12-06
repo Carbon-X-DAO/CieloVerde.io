@@ -2,7 +2,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     fu.url = "github:numtide/flake-utils/bba5dcc8e0b20ab664967ad83d24d64cb64ec4f4";
-    frontend.url = "path:./frontend";
+    frontend.url = "git+ssh://git@github.com/Carbon-X-DAO/cieloverde.io-frontend?ref=main";
   };
 
   outputs = self:
