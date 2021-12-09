@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS "form_info"
+DROP TABLE IF EXISTS "form_info";

@@ -87,8 +87,11 @@ func main() {
 		log.Fatalf("failed to initialize a migrate driver instance: %s", err)
 	}
 
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("failed to apply all migrations: %s", err)
+	if err := m.Up(); err != nil {
+		if err != migrate.ErrNoChange {
+			log.Fatalf("failed to apply all migrations: %s", err)
+		}
+		log.Println("DB already up to date :)")
 	}
 
 	var root string
@@ -122,8 +125,12 @@ func main() {
 		log.Fatal("both cert file and key file must be either non-empty or empty")
 	}
 
+	srv, err := fileserver.New(flagAddress, flagTicketsDir, root, tlsConfig, db)
+	if err != nil {
+		log.Fatalf("failed to create a new fileserver instance: %s", err)
+	}
+
 	log.Printf("starting a fileserver for root path: %s", root)
-	srv := fileserver.New(flagAddress, flagTicketsDir, root, tlsConfig, db)
 
 	killed := make(chan os.Signal)
 	signal.Notify(killed, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)

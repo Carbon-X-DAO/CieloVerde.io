@@ -22,7 +22,6 @@ import (
 	"github.com/Carbon-X-DAO/QRInvite/templates"
 )
 
-// var reTicket = regexp.MustCompile(`^\/code\/(?P<code>[a-fA-F0-9]{32})$`)
 var reInboundQR = regexp.MustCompile(`^\/qrcodes\/(?P<code>[0-9])$`)
 
 type Server struct {
@@ -33,11 +32,21 @@ type Server struct {
 }
 
 // tlsConfig may be nil, in which case an HTTP server will serve without TLS
-func New(addr string, ticketsDir string, frontendRoot string, tlsConfig *tls.Config, db *sql.DB) *Server {
+func New(addr string, ticketsDir string, frontendRoot string, tlsConfig *tls.Config, db *sql.DB) (*Server, error) {
+	var err error
+
 	server := &Server{
 		frontendRoot: frontendRoot,
 		db:           db,
 		ticketsDir:   ticketsDir,
+	}
+
+	if stmtInsertQRIncomingHeaders, err = db.Prepare(queryInsertQRIncomingHeaders); err != nil {
+		return nil, fmt.Errorf("failed to prepare statement for storing incoming QR code handler headers: %w", err)
+	}
+
+	if stmtInsertFormRow, err = db.Prepare(queryInsertFormRow); err != nil {
+		return nil, fmt.Errorf("failed to prepare statement for storing form information: %w", err)
 	}
 
 	mux := http.NewServeMux()
@@ -51,7 +60,7 @@ func New(addr string, ticketsDir string, frontendRoot string, tlsConfig *tls.Con
 
 	server.Server = &httpServer
 
-	return server
+	return server, nil
 }
 
 func (server *Server) Listen() error {
