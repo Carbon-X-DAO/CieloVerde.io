@@ -4,7 +4,7 @@ var ticketHTMLTemplate = `
 <!DOCTYPE html>
 <html lang="en">
     <script>
-		window.alert("Save this page as PDF to save your ticket!")
+		window.alert("¡Tome una captura de pantalla del código QR para guardar boleto!")
 	</script>
 	<body>
 	<div id="flyer" style="position: relative;">
