@@ -1,5 +1,24 @@
 CREATE TABLE IF NOT EXISTS form_info(
-	ID SERIAL,
-	FORM TEXT NOT NULL,
-	CTIME TIMESTAMP WITH TIME ZONE
+	id SERIAL,
+	first_name TEXT,
+	last_name TEXT,
+	country TEXT,
+	department TEXT,
+	city TEXT,
+	town TEXT,
+	neighborhood TEXT,
+	street TEXT,
+	street_number TEXT,
+	id_no BIGINT UNIQUE,
+	phone TEXT,
+	email TEXT,
+	gender TEXT,
+	age SMALLSERIAL,
+	daily_qty TEXT,
+	weekly_qty TEXT,
+	monthly_qty TEXT,
+	newsletter BOOLEAN,
+	gift_box BOOLEAN,
+	authorized BOOLEAN,
+	ctime TIMESTAMP WITH TIME ZONE
 );

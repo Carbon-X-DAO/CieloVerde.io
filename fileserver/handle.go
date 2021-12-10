@@ -3,10 +3,10 @@ package fileserver
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
 	"database/sql"
 	"fmt"
 	"image/png"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -21,55 +21,80 @@ import (
 )
 
 const (
-	queryInsertFormRow = `INSERT INTO form_info(form, ctime) VALUES ($1, $2);`
+	queryInsertFormRow = `INSERT INTO
+	form_info(
+		first_name, last_name,
+		country, department, city, town, neighborhood, street, street_number,
+		id_no, phone, email, gender, age,
+		daily_qty, weekly_qty, monthly_qty,
+		newsletter, gift_box, authorized,
+		ctime
+	)
+	VALUES (
+		$1, $2,
+		$3, $4, $5, $6, $7, $8, $9,
+		$10, $11, $12, $13, $14,
+		$15,$16, $17,
+		$18, $19, $20, 
+		$21
+	);`
 
-	queryInsertQRIncomingHeaders = "INSERT INTO qr_incoming_headers(acceptlanguage, cookie, useragent, cfconnectingip, xforwardedfor, cfray, cfipcountry, cfvisitor, ctime) VALUES( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
+	queryInsertQRIncomingHeaders = `INSERT INTO
+	qr_incoming_headers(acceptlanguage, cookie, useragent, cfconnectingip, xforwardedfor, cfray, cfipcountry, cfvisitor, ctime)
+	VALUES( $1, $2, $3, $4, $5, $6, $7, $8, $9 )`
 )
 
 var stmtInsertQRIncomingHeaders *sql.Stmt
 var stmtInsertFormRow *sql.Stmt
 
 type formInfo struct {
-	Name    string
-	Email   string
-	Phone   string
-	Message string
+	FirstName    string `form:"fname"`
+	LastName     string `form:"lname"`
+	Country      string `form:"country"`
+	Department   string `form:"department"`
+	City         string `form:"city"`
+	Town         string `form:"town"`
+	Neighborhood string `form:"neighborhood"`
+	Street       string `form:"street"`
+	StreetNumber string `form:"address_number"`
+	ID           uint64 `form:"id_no"`
+	Phone        string `form:"phone"`
+	Email        string `form:"email"`
+	Gender       string `form:"gender"`
+	Age          uint16 `form:"age"`
+	DailyQty     string `form:"daily_qty"`
+	WeeklyQty    string `form:"weekly_qty"`
+	MonthlyQty   string `form:"monthly_qty"`
+	Newsletter   bool   `form:"newsletter"`
+	GiftBox      bool   `form:"gift_box"`
+	Authorized   bool   `form:"authorized"`
 }
 
 func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
-	bs, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Printf("failed to read /submit request body: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if _, err = stmtInsertFormRow.ExecContext(ctx, bs, time.Now()); err != nil {
-		log.Printf("failed to read /submit request body: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	bs, _ := ioutil.ReadAll(r.Body)
+	log.Printf("%s\n", bs)
+	r.Body = io.NopCloser(bytes.NewBuffer(bs))
 
 	var fi formInfo
-	dec := form.NewDecoder(bytes.NewReader(bs))
+	dec := form.NewDecoder(r.Body)
 	dec.IgnoreUnknownKeys(true)
 	if err := dec.Decode(&fi); err != nil {
 		log.Printf("failed to decode form: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	if err := saveFormInfo(ctx, &fi); err != nil {
+		log.Printf("failed to save form: %+v: %s", fi, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	hash := md5.Sum([]byte(fi.Email))
-	hashString := string(fmt.Sprintf("%x", hash))
-
-	go saveQRCodePNG(server.ticketsDir, hashString)
-
-	if _, err := w.Write([]byte(fmt.Sprintf(ticketHTMLTemplate, ticketFilename(server.ticketsDir, hashString)))); err != nil {
-		log.Printf("failed to execute ticket template: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	log.Printf("sending the email to %s\n", fi.Email)
+	// TODO: validate email address
+	go server.sendEmail(fi.Email, fi.ID)
 }
 
 func (server *Server) handleFrontendPath(w http.ResponseWriter, r *http.Request) {
@@ -175,27 +200,36 @@ func (server *Server) handleTicketsPath(w http.ResponseWriter, r *http.Request) 
 }
 
 func (server *Server) handleQRInbound(w http.ResponseWriter, r *http.Request) {
-	go saveQRInboundHeaders(r)
+	go saveQRInboundHeaders(r.Header)
 
 	http.Redirect(w, r, "/form", http.StatusSeeOther)
 }
 
-func saveQRInboundHeaders(r *http.Request) {
-	acceptlanguage := r.Header.Get("Accept-Language")
-	cookie := r.Header.Get("Cookie")
-	useragent := r.Header.Get("User-Agent")
-	cfconnectingip := r.Header.Get("CF-Connecting-IP")
-	xforwardedfor := r.Header.Get("X-Forwarded-For")
-	cfray := r.Header.Get("CF-Ray")
-	cfipcountry := r.Header.Get("CF-IPCountry")
-	cfvisitor := r.Header.Get("CF-Visitor")
+func saveQRInboundHeaders(hdrs http.Header) {
+	acceptlanguage := hdrs.Get("Accept-Language")
+	cookie := hdrs.Get("Cookie")
+	useragent := hdrs.Get("User-Agent")
+	cfconnectingip := hdrs.Get("CF-Connecting-IP")
+	xforwardedfor := hdrs.Get("X-Forwarded-For")
+	cfray := hdrs.Get("CF-Ray")
+	cfipcountry := hdrs.Get("CF-IPCountry")
+	cfvisitor := hdrs.Get("CF-Visitor")
 
-	// queryInsertQRIncomingHeaders = "INSERT INTO qr_incoming_headers(acceptlanguage, cookie, useragent, cfconnectingip, xforwardedfor, cfray, cfipcountry, cfvisitor, ctime) VALUES( $1, $2, $3, $4, $5, $6, $7, $8, $9 )"
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	if _, err := stmtInsertQRIncomingHeaders.ExecContext(ctx, acceptlanguage, cookie, useragent, cfconnectingip, xforwardedfor, cfray, cfipcountry, cfvisitor, time.Now()); err != nil {
 		log.Printf("failed to save inbound QR code headers: %s", err)
 	}
+}
+
+func saveFormInfo(ctx context.Context, f *formInfo) error {
+	_, err := stmtInsertFormRow.ExecContext(ctx, f.FirstName, f.LastName,
+		f.Country, f.Department, f.City, f.Town, f.Neighborhood, f.Street, f.StreetNumber,
+		f.ID, f.Phone, f.Email, f.Gender, f.Age,
+		f.DailyQty, f.WeeklyQty, f.MonthlyQty,
+		f.Newsletter, f.GiftBox, f.Authorized, time.Now())
+
+	return err
 }
 
 func saveQRCodePNG(dir, hash string) {
