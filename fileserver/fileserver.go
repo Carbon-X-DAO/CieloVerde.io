@@ -10,6 +10,8 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
+	"image"
+	"image/jpeg"
 	"io"
 	"log"
 	"net/http"
@@ -27,18 +29,28 @@ var reInboundQR = regexp.MustCompile(`^\/qrcodes\/(?P<code>[0-9])$`)
 type Server struct {
 	frontendRoot string
 	*http.Server
-	db         *sql.DB
-	ticketsDir string
+	db    *sql.DB
+	flyer image.Image
 }
 
 // tlsConfig may be nil, in which case an HTTP server will serve without TLS
-func New(addr string, ticketsDir string, frontendRoot string, tlsConfig *tls.Config, db *sql.DB) (*Server, error) {
+func New(addr string, flyerFilename string, frontendRoot string, tlsConfig *tls.Config, db *sql.DB) (*Server, error) {
 	var err error
+
+	flyerHandle, err := os.Open(flyerFilename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open flyer image file: %s", err)
+	}
+
+	flyerImg, err := jpeg.Decode(flyerHandle)
+	if err != nil {
+		return nil, fmt.Errorf("failed to JPEG decode flyer image file: %s", err)
+	}
 
 	server := &Server{
 		frontendRoot: frontendRoot,
 		db:           db,
-		ticketsDir:   ticketsDir,
+		flyer:        flyerImg,
 	}
 
 	if stmtInsertQRIncomingHeaders, err = db.Prepare(queryInsertQRIncomingHeaders); err != nil {

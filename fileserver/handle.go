@@ -3,20 +3,15 @@ package fileserver
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"image/png"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
 	"github.com/ajg/form"
-	"github.com/boombuler/barcode"
-	"github.com/boombuler/barcode/qr"
 )
 
 const (
@@ -235,37 +230,4 @@ func saveFormInfo(ctx context.Context, f *formInfo) error {
 		f.Newsletter, f.GiftBox, f.Authorized, false, time.Now())
 
 	return err
-}
-
-func saveQRCodePNG(dir, hash string) {
-	code, err := qr.Encode(string(hash), qr.L, qr.Auto)
-	if err != nil {
-		log.Printf("failed to encode hash as QR code: %s\n", err)
-		return
-	}
-
-	intsize := 256
-	// Scale the barcode to the appropriate size
-	code, err = barcode.Scale(code, intsize, intsize)
-	if err != nil {
-		log.Printf("failed to scale QR code: %s\n", err)
-		return
-	}
-
-	filelocation := ticketFilename(dir, hash)
-	f, err := os.Create(filelocation)
-	if err != nil {
-		log.Printf("failed to create file %s: %s", filelocation, err)
-		return
-	}
-
-	if err := png.Encode(f, code); err != nil {
-		log.Printf("failed to write QR code as PNG to file %s: %s", filelocation, err)
-		return
-	}
-}
-
-func ticketFilename(dir, name string) string {
-	filename := fmt.Sprintf("%s.png", name)
-	return filepath.Join(dir, filename)
 }

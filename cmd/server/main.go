@@ -24,18 +24,18 @@ import (
 )
 
 var (
-	flagAddress    string
-	flagTicketsDir string
-	flagRoot       string
-	flagDBRole     string
-	flagCertFile   string
-	flagKeyFile    string
+	flagAddress       string
+	flagFlyerFilename string
+	flagRoot          string
+	flagDBRole        string
+	flagCertFile      string
+	flagKeyFile       string
 )
 
 func init() {
 	flag.StringVar(&flagAddress, "address", "0.0.0.0:80", "address on which to listen")
 	flag.StringVar(&flagRoot, "root", "./result/static", "root path to site")
-	flag.StringVar(&flagTicketsDir, "tickets", "./tickets", "root path to tickets folder")
+	flag.StringVar(&flagFlyerFilename, "flyer", "./flyer.jpg", "path to flyer image")
 	flag.StringVar(&flagDBRole, "role", "postgres", "postgres DB user role")
 	flag.StringVar(&flagCertFile, "cert", "example.crt", "TLS certificate file")
 	flag.StringVar(&flagKeyFile, "key", "example.key", "TLS certificate signing key file")
@@ -125,7 +125,7 @@ func main() {
 		log.Fatal("both cert file and key file must be either non-empty or empty")
 	}
 
-	srv, err := fileserver.New(flagAddress, flagTicketsDir, root, tlsConfig, db)
+	srv, err := fileserver.New(flagAddress, flagFlyerFilename, root, tlsConfig, db)
 	if err != nil {
 		log.Fatalf("failed to create a new fileserver instance: %s", err)
 	}
