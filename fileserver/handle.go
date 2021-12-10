@@ -1,13 +1,10 @@
 package fileserver
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
 	"image/png"
-	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -72,10 +69,6 @@ type formInfo struct {
 }
 
 func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
-	bs, _ := ioutil.ReadAll(r.Body)
-	log.Printf("%s\n", bs)
-	r.Body = io.NopCloser(bytes.NewBuffer(bs))
-
 	var fi formInfo
 	dec := form.NewDecoder(r.Body)
 	dec.IgnoreUnknownKeys(true)
