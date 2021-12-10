@@ -20,5 +20,6 @@ CREATE TABLE IF NOT EXISTS form_info(
 	newsletter BOOLEAN,
 	gift_box BOOLEAN,
 	authorized BOOLEAN,
+	claimed BOOLEAN,
 	ctime TIMESTAMP WITH TIME ZONE
 );

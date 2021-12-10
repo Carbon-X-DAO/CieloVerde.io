@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS qr_incoming_headers(
+CREATE TABLE IF NOT EXISTS request_info(
 	id SERIAL,
 	acceptlanguage TEXT,
 	cookie TEXT,
@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS qr_incoming_headers(
 	cfray TEXT,
 	cfipcountry TEXT,
 	cfvisitor TEXT,
+	url_value TEXT,
 	ctime TIMESTAMP WITH TIME ZONE
 );

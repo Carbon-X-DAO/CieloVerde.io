@@ -7,6 +7,7 @@ import (
 	"image/png"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,7 +26,7 @@ const (
 		country, department, city, town, neighborhood, street, street_number,
 		id_no, phone, email, gender, age,
 		daily_qty, weekly_qty, monthly_qty,
-		newsletter, gift_box, authorized,
+		newsletter, gift_box, authorized, claimed,
 		ctime
 	)
 	VALUES (
@@ -33,13 +34,13 @@ const (
 		$3, $4, $5, $6, $7, $8, $9,
 		$10, $11, $12, $13, $14,
 		$15,$16, $17,
-		$18, $19, $20, 
-		$21
+		$18, $19, $20, $21,
+		$22
 	);`
 
 	queryInsertQRIncomingHeaders = `INSERT INTO
-	qr_incoming_headers(acceptlanguage, cookie, useragent, cfconnectingip, xforwardedfor, cfray, cfipcountry, cfvisitor, ctime)
-	VALUES( $1, $2, $3, $4, $5, $6, $7, $8, $9 )`
+	request_info(acceptlanguage, cookie, useragent, cfconnectingip, xforwardedfor, cfray, cfipcountry, cfvisitor, url_value, ctime)
+	VALUES( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10 )`
 )
 
 var stmtInsertQRIncomingHeaders *sql.Stmt
@@ -88,6 +89,8 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	go saveRequestInfo(r.Header, r.URL)
 
 	log.Printf("sending the email to %s\n", fi.Email)
 	// TODO: validate email address
@@ -197,12 +200,12 @@ func (server *Server) handleTicketsPath(w http.ResponseWriter, r *http.Request) 
 }
 
 func (server *Server) handleQRInbound(w http.ResponseWriter, r *http.Request) {
-	go saveQRInboundHeaders(r.Header)
+	go saveRequestInfo(r.Header, r.URL)
 
 	http.Redirect(w, r, "/form", http.StatusSeeOther)
 }
 
-func saveQRInboundHeaders(hdrs http.Header) {
+func saveRequestInfo(hdrs http.Header, url *url.URL) {
 	acceptlanguage := hdrs.Get("Accept-Language")
 	cookie := hdrs.Get("Cookie")
 	useragent := hdrs.Get("User-Agent")
@@ -211,11 +214,16 @@ func saveQRInboundHeaders(hdrs http.Header) {
 	cfray := hdrs.Get("CF-Ray")
 	cfipcountry := hdrs.Get("CF-IPCountry")
 	cfvisitor := hdrs.Get("CF-Visitor")
+	u := url.String()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	if _, err := stmtInsertQRIncomingHeaders.ExecContext(ctx, acceptlanguage, cookie, useragent, cfconnectingip, xforwardedfor, cfray, cfipcountry, cfvisitor, time.Now()); err != nil {
-		log.Printf("failed to save inbound QR code headers: %s", err)
+	if _, err := stmtInsertQRIncomingHeaders.ExecContext(ctx,
+		acceptlanguage, cookie, useragent,
+		cfconnectingip, xforwardedfor, cfray, cfipcountry, cfvisitor,
+		u,
+		time.Now()); err != nil {
+		log.Printf("failed to save request infos: %s", err)
 	}
 }
 
@@ -224,7 +232,7 @@ func saveFormInfo(ctx context.Context, f *formInfo) error {
 		f.Country, f.Department, f.City, f.Town, f.Neighborhood, f.Street, f.StreetNumber,
 		f.ID, f.Phone, f.Email, f.Gender, f.Age,
 		f.DailyQty, f.WeeklyQty, f.MonthlyQty,
-		f.Newsletter, f.GiftBox, f.Authorized, time.Now())
+		f.Newsletter, f.GiftBox, f.Authorized, false, time.Now())
 
 	return err
 }
