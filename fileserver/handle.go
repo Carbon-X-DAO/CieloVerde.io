@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
@@ -87,6 +88,9 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	if err := saveFormInfo(ctx, &fi); err != nil {
+		if strings.Contains(err.Error(), "duplicate") {
+			return
+		}
 		log.Printf("failed to save form: %+v: %s", fi, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
