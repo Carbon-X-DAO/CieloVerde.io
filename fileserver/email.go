@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"image/jpeg"
 	"io/ioutil"
+	"net/url"
 	"time"
 
 	goimage "image"
@@ -52,6 +53,10 @@ func (server *Server) sendEmail(email string, id uint64) error {
 	msg.SetHtml(body)
 
 	msg.AddReaderAttachment("boleto.jpg", ioutil.NopCloser(&buf))
+	msg.AddHeader(
+		"List-Unsubscribe",
+		fmt.Sprintf("<mailto:unsubscribe@cieloverde.io>,<https://cieloverde.io/unsubscribe?email=%s>", url.QueryEscape(email)),
+	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
