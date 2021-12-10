@@ -19,9 +19,11 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
 	"github.com/Carbon-X-DAO/QRInvite/templates"
+	"github.com/mailgun/mailgun-go/v4"
 )
 
 var reInboundQR = regexp.MustCompile(`^\/qrcodes\/(?P<code>[0-9])$`)
@@ -31,10 +33,11 @@ type Server struct {
 	*http.Server
 	db    *sql.DB
 	flyer image.Image
+	mg    *mailgun.MailgunImpl
 }
 
 // tlsConfig may be nil, in which case an HTTP server will serve without TLS
-func New(addr string, flyerFilename string, frontendRoot string, tlsConfig *tls.Config, db *sql.DB) (*Server, error) {
+func New(addr, mailgunAPIKey, flyerFilename, frontendRoot string, tlsConfig *tls.Config, db *sql.DB) (*Server, error) {
 	var err error
 
 	flyerHandle, err := os.Open(flyerFilename)
@@ -47,10 +50,24 @@ func New(addr string, flyerFilename string, frontendRoot string, tlsConfig *tls.
 		return nil, fmt.Errorf("failed to JPEG decode flyer image file: %s", err)
 	}
 
+	mgClient := mailgun.NewMailgun("cieloverde.io", mailgunAPIKey)
+	ds := mgClient.ListDomains(&mailgun.ListOptions{Limit: 20})
+
+	var domains = []mailgun.Domain{}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	ds.Next(ctx, &domains)
+	if err := ds.Err(); err != nil {
+		return nil, fmt.Errorf("failed to use fresh mailgun client: %w", err)
+	}
+
 	server := &Server{
 		frontendRoot: frontendRoot,
 		db:           db,
 		flyer:        flyerImg,
+		mg:           mgClient,
 	}
 
 	if stmtInsertQRIncomingHeaders, err = db.Prepare(queryInsertQRIncomingHeaders); err != nil {

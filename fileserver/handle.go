@@ -3,6 +3,7 @@ package fileserver
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -89,7 +90,11 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("sending the email to %s\n", fi.Email)
 	// TODO: validate email address
-	go server.sendEmail(fi.Email, fi.ID)
+	go func() {
+		if err := server.sendEmail(fi.Email, fi.ID); err != nil {
+			fmt.Printf("failed to send email to %s: %s", fi.Email, err)
+		}
+	}()
 }
 
 func (server *Server) handleFrontendPath(w http.ResponseWriter, r *http.Request) {

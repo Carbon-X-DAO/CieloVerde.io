@@ -1,11 +1,13 @@
 package fileserver
 
 import (
+	"bytes"
+	"context"
 	"crypto/md5"
 	"fmt"
 	"image/jpeg"
-	"log"
-	"os"
+	"io/ioutil"
+	"time"
 
 	goimage "image"
 
@@ -14,27 +16,51 @@ import (
 	"github.com/boombuler/barcode/qr"
 )
 
+var body string = `
+<html>
+<body>
+<h1>Gracias por participar.</h1>
+
+	Te has ganado un premio.
+
+	Que puedes reclamar
+	<ol>
+	<li> En la Carroza durante marcha. </li>
+	<li> En la tarima de el evento después de la marcha en el parque luces. </li>
+	</ol>
+
+	Movimiento Cannabico Colombiano.
+</body>
+</html>
+`
+
 // TOOD: send the email
-func (server *Server) sendEmail(email string, id uint64) {
+func (server *Server) sendEmail(email string, id uint64) error {
 	code, err := generateQRCode(id)
 	if err != nil {
-		log.Printf("failed to generate QR code: %s", err)
-		return
+		return fmt.Errorf("failed to generate QR code: %w", err)
 	}
 
 	attachment := generateAttachment(server.flyer, code)
-
-	// TODO: make this a buffer of bytes
-	att, err := os.Create("./attachment.jpg")
-	if err != nil {
-		log.Printf("failed to create attachment file: %s", err)
-		return
+	var buf bytes.Buffer
+	if err := jpeg.Encode(&buf, attachment, &jpeg.Options{Quality: 100}); err != nil {
+		return fmt.Errorf("failed to encode JPEG: %w", err)
 	}
 
-	if err := jpeg.Encode(att, attachment, &jpeg.Options{Quality: jpeg.DefaultQuality}); err != nil {
-		log.Printf("failed to encode attachment as JPEG: %s", err)
-		return
+	subject := `Movimiento Cannabico Colombiano Premio 11 de Diciembre 2021`
+	msg := server.mg.NewMessage("noreply@cieloverde.io", subject, "", email)
+	msg.SetHtml(body)
+
+	msg.AddReaderAttachment("boleto.jpg", ioutil.NopCloser(&buf))
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if _, _, err = server.mg.Send(ctx, msg); err != nil {
+		return fmt.Errorf("failed to send message to recipient: %w", err)
 	}
+
+	return nil
 }
 
 func generateQRCode(id uint64) (goimage.Image, error) {
