@@ -73,6 +73,8 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 			log.Printf("failed to store email status info in DB (%s, %d): %s", fi.Email, fi.ID, err)
 		}
 	}()
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (server *Server) handleFrontendPath(w http.ResponseWriter, r *http.Request) {
