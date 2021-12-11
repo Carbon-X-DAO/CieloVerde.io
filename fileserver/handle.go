@@ -87,6 +87,11 @@ const loginForm = `
 
 const tplAlreadyClaimed = `
 <!DOCTYPE html>
+<style>
+   p {
+	   font-size: 120px;
+   }
+</style>
 <html>
 	<body style="background-color: #F88685">
 		<p> {{.First}} {{.Last}} </p>
@@ -97,6 +102,11 @@ const tplAlreadyClaimed = `
 
 const tplClaim = `
 <!DOCTYPE html>
+<style>
+   p {
+	   font-size: 120px;
+   }
+</style>
 <html>
 	<body style="background-color: #C8F5C6">
 		<p> {{.First}} {{.Last}} </p>
