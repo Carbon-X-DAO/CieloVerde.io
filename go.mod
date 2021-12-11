@@ -1,4 +1,4 @@
-module github.com/Carbon-X-DAO/QRInvite
+module github.com/Carbon-X-DAO/CieloVerde.io
 
 go 1.17
 
