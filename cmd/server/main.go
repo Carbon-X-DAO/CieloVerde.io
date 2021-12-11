@@ -24,13 +24,14 @@ import (
 )
 
 var (
-	flagAddress       string
-	flagMailgunAPIKey string
-	flagFlyerFilename string
-	flagRoot          string
-	flagDBRole        string
-	flagCertFile      string
-	flagKeyFile       string
+	flagAddress        string
+	flagMailgunAPIKey  string
+	flagFlyerFilename  string
+	flagRoot           string
+	flagDBRole         string
+	flagCertFile       string
+	flagKeyFile        string
+	flagShibbolethGUID string
 )
 
 func init() {
@@ -41,6 +42,7 @@ func init() {
 	flag.StringVar(&flagDBRole, "role", "postgres", "postgres DB user role")
 	flag.StringVar(&flagCertFile, "cert", "example.crt", "TLS certificate file")
 	flag.StringVar(&flagKeyFile, "key", "example.key", "TLS certificate signing key file")
+	flag.StringVar(&flagShibbolethGUID, "guid", "5f9f3021-845e-4a21-a63c-2f7f75262649", "a special token that admins need")
 	flag.Parse()
 }
 
@@ -127,7 +129,7 @@ func main() {
 		log.Fatal("both cert file and key file must be either non-empty or empty")
 	}
 
-	srv, err := fileserver.New(flagAddress, flagMailgunAPIKey, flagFlyerFilename, root, tlsConfig, db)
+	srv, err := fileserver.New(flagAddress, flagShibbolethGUID, flagMailgunAPIKey, flagFlyerFilename, root, tlsConfig, db)
 	if err != nil {
 		log.Fatalf("failed to create a new fileserver instance: %s", err)
 	}

@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
@@ -62,13 +63,14 @@ var stmtInsertEmailStatus *sql.Stmt
 type Server struct {
 	frontendRoot string
 	*http.Server
-	db    *sql.DB
-	flyer image.Image
-	mg    *mailgun.MailgunImpl
+	db         *sql.DB
+	flyer      image.Image
+	mg         *mailgun.MailgunImpl
+	shibboleth string
 }
 
 // tlsConfig may be nil, in which case an HTTP server will serve without TLS
-func New(addr, mailgunAPIKey, flyerFilename, frontendRoot string, tlsConfig *tls.Config, db *sql.DB) (*Server, error) {
+func New(addr, shibboleth string, mailgunAPIKey, flyerFilename, frontendRoot string, tlsConfig *tls.Config, db *sql.DB) (*Server, error) {
 	var err error
 
 	flyerHandle, err := os.Open(flyerFilename)
@@ -99,6 +101,7 @@ func New(addr, mailgunAPIKey, flyerFilename, frontendRoot string, tlsConfig *tls
 		db:           db,
 		flyer:        flyerImg,
 		mg:           mgClient,
+		shibboleth:   shibboleth,
 	}
 
 	if stmtInsertQRIncomingHeaders, err = db.Prepare(queryInsertQRIncomingHeaders); err != nil {
@@ -158,6 +161,12 @@ func (server *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		server.handleQRInbound(w, r)
 	case r.URL.Path == "/submit" && r.Method == http.MethodPost:
 		server.handleForm(w, r)
+	case r.URL.Path == "/login" && r.Method == http.MethodGet:
+		server.handleLogin(w, r)
+	case r.URL.Path == "/login" && r.Method == http.MethodPost:
+		server.handleLoginRequest(w, r)
+	case strings.HasPrefix(r.URL.Path, "/users/"):
+		server.handleGetUserInfo(w, r)
 	default:
 		server.handleFrontendPath(w, r)
 	}

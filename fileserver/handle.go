@@ -13,6 +13,11 @@ import (
 	"github.com/ajg/form"
 )
 
+type Login struct {
+	Username string `form:"username"`
+	Password string `form:"password"`
+}
+
 type formInfo struct {
 	FirstName    string `form:"fname"`
 	LastName     string `form:"lname"`
@@ -33,6 +38,18 @@ type formInfo struct {
 	GiftBox      bool   `form:"gift_box"`
 	Authorized   bool   `form:"authorized"`
 }
+
+const loginForm = `
+<html>
+<body>
+<form action="/login" method="POST">
+<input name="username" placeholder="username" />
+<input name="password" placeholder="password" />
+<input type="submit" />
+</form>
+</body>
+</html>
+`
 
 func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 	var fi formInfo
@@ -134,6 +151,44 @@ func (server *Server) handleQRInbound(w http.ResponseWriter, r *http.Request) {
 	go saveRequestInfo(r.Header, r.URL)
 
 	http.Redirect(w, r, "/form", http.StatusSeeOther)
+}
+
+func (server *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "text/html")
+	if _, err := w.Write([]byte(loginForm)); err != nil {
+		log.Printf("failed to serve login form: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (server *Server) handleLoginRequest(w http.ResponseWriter, r *http.Request) {
+	var li Login
+	if err := form.NewDecoder(r.Body).Decode(&li); err != nil {
+		log.Printf("failed to decode form from body: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if !(li.Username == "admin" && li.Password == "admin") {
+		log.Println("rejected invalid login attempt")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	now := time.Now()
+	until := now.Add(24 * time.Hour)
+
+	http.SetCookie(w, &http.Cookie{
+		Name:    "Shibboleth",
+		Value:   server.shibboleth,
+		Expires: until,
+	})
+}
+
+func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) {
+	log.Printf("you requested %s", r.URL.String())
+	return
 }
 
 func saveRequestInfo(hdrs http.Header, url *url.URL) {
