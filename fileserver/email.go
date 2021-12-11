@@ -3,7 +3,6 @@ package fileserver
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
 	"fmt"
 	"image/jpeg"
 	"io/ioutil"
@@ -36,8 +35,8 @@ var body string = `
 `
 
 // TOOD: send the email
-func (server *Server) sendEmail(email string, gov_id uint64) (string, string, error) {
-	code, err := generateQRCode(gov_id)
+func (server *Server) sendEmail(email string, hash [16]byte) (string, string, error) {
+	code, err := generateQRCode(hash)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to generate QR code: %w", err)
 	}
@@ -65,13 +64,12 @@ func (server *Server) sendEmail(email string, gov_id uint64) (string, string, er
 	return resp, id, err
 }
 
-func generateQRCode(id uint64) (goimage.Image, error) {
-	hash := md5.Sum([]byte(fmt.Sprintf("%d", id)))
+func generateQRCode(hash [16]byte) (goimage.Image, error) {
 	hashString := string(fmt.Sprintf("%x", hash))
 
 	code, err := qr.Encode(hashString, qr.L, qr.Auto)
 	if err != nil {
-		return nil, fmt.Errorf("failed to encode id %d as QR code: %w", id, err)
+		return nil, fmt.Errorf("failed to encode hash %x as QR code: %w", hash, err)
 	}
 
 	intsize := 180

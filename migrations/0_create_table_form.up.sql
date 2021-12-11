@@ -19,5 +19,6 @@ CREATE TABLE IF NOT EXISTS form_info(
 	gift_box BOOLEAN,
 	authorized BOOLEAN,
 	claimed BOOLEAN,
+	id_hash TEXT,
 	ctime TIMESTAMP WITH TIME ZONE
 );

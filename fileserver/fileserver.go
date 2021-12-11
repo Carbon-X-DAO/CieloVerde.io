@@ -36,6 +36,7 @@ const (
 		id_no, phone, email, gender, age,
 		daily_qty, weekly_qty, monthly_qty,
 		newsletter, gift_box, authorized, claimed,
+		id_hash,
 		ctime
 	)
 	VALUES (
@@ -44,7 +45,8 @@ const (
 		$8, $9, $10, $11, $12,
 		$13, $14, $15,
 		$16, $17, $18, $19,
-		$20
+		$20,
+		$21
 	);`
 
 	queryInsertQRIncomingHeaders = `INSERT INTO
@@ -54,11 +56,14 @@ const (
 	queryInsertEmailStatus = `INSERT INTO
 	email_status(email_address, gov_id, mailgun_msg, mailgun_id, error, ctime)
 	VALUES( $1, $2, $3, $4, $5, $6)`
+
+	querySelectUser = `SELECT first_name, last_name, id_no, claimed FROM form_info WHERE id_hash=$1`
 )
 
 var stmtInsertQRIncomingHeaders *sql.Stmt
 var stmtInsertFormRow *sql.Stmt
 var stmtInsertEmailStatus *sql.Stmt
+var stmtSelectUser *sql.Stmt
 
 type Server struct {
 	frontendRoot string
@@ -114,6 +119,10 @@ func New(addr, shibboleth string, mailgunAPIKey, flyerFilename, frontendRoot str
 
 	if stmtInsertEmailStatus, err = db.Prepare(queryInsertEmailStatus); err != nil {
 		return nil, fmt.Errorf("failed to prepare statement for storing email status information: %w", err)
+	}
+
+	if stmtSelectUser, err = db.Prepare(querySelectUser); err != nil {
+		return nil, fmt.Errorf("failed to prepare statement for selecting users from form_info: %w", err)
 	}
 
 	mux := http.NewServeMux()

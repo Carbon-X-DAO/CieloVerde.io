@@ -2,6 +2,9 @@ package fileserver
 
 import (
 	"context"
+	"crypto/md5"
+	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"net/url"
@@ -40,6 +43,7 @@ type formInfo struct {
 }
 
 const loginForm = `
+<!DOCTYPE html>
 <html>
 <body>
 <form action="/login" method="POST">
@@ -51,6 +55,26 @@ const loginForm = `
 </html>
 `
 
+const tpl = `
+<!DOCTYPE html>
+<html>
+	<body>
+		<p> {{.First}} {{.Last}} </p>
+		<p> {{.ID}} </p>
+		<form  method="POST" action="/claim/{{.Hash}}">
+		<input type="submit" value="reclamar" />
+		</form>
+	</body>
+</html>
+`
+
+type user struct {
+	First string
+	Last  string
+	ID    uint64
+	Hash  string
+}
+
 func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 	var fi formInfo
 	dec := form.NewDecoder(r.Body)
@@ -61,9 +85,11 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hash := md5.Sum([]byte(fmt.Sprintf("%d", fi.ID)))
+
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	if err := saveFormInfo(ctx, &fi); err != nil {
+	if err := saveFormInfo(ctx, &fi, hash); err != nil {
 		// has this ID already submitted an ID?
 		if strings.Contains(err.Error(), "duplicate") {
 			w.WriteHeader(http.StatusNotModified)
@@ -78,7 +104,7 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 		go saveRequestInfo(r.Header, r.URL)
 
 		go func() {
-			msg, id, err := server.sendEmail(fi.Email, fi.ID)
+			msg, id, err := server.sendEmail(fi.Email, hash)
 
 			var errString string
 			if err != nil {
@@ -188,7 +214,47 @@ func (server *Server) handleLoginRequest(w http.ResponseWriter, r *http.Request)
 
 func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) {
 	log.Printf("you requested %s", r.URL.String())
-	return
+	hash := strings.TrimPrefix(r.URL.Path, "/users/")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	rows, err := stmtSelectUser.QueryContext(ctx, hash)
+	if err != nil {
+		log.Printf("failed to select from form_info for hash %s: %s", hash, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var first string
+	var last string
+	var gov_id uint64
+	var claimed bool
+
+	var cnt int
+	for rows.Next() {
+		if err := rows.Scan(&first, &last, &gov_id, &claimed); err != nil {
+			log.Printf("failed to scan user: %s", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		cnt++
+		if cnt > 1 {
+			log.Printf("encountered multiple users with hash %s", hash)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		log.Printf("found %s %s - claimed %v", first, last, claimed)
+	}
+
+	t, err := template.New("webpage").Parse(tpl)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	t.Execute(w, user{first, last, gov_id, hash})
 }
 
 func saveRequestInfo(hdrs http.Header, url *url.URL) {
@@ -213,12 +279,12 @@ func saveRequestInfo(hdrs http.Header, url *url.URL) {
 	}
 }
 
-func saveFormInfo(ctx context.Context, f *formInfo) error {
+func saveFormInfo(ctx context.Context, f *formInfo, hash [16]byte) error {
 	_, err := stmtInsertFormRow.ExecContext(ctx, f.FirstName, f.LastName,
 		f.Country, f.Department, f.City, f.Neighborhood, f.Street,
 		f.ID, f.Phone, f.Email, f.Gender, f.Age,
 		f.DailyQty, f.WeeklyQty, f.MonthlyQty,
-		f.Newsletter, f.GiftBox, f.Authorized, false, time.Now())
+		f.Newsletter, f.GiftBox, f.Authorized, false, fmt.Sprintf("%x", hash), time.Now())
 
 	return err
 }
