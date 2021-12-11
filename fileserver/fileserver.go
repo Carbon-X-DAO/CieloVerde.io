@@ -21,8 +21,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Carbon-X-DAO/QRInvite/fsutil"
-	"github.com/Carbon-X-DAO/QRInvite/templates"
+	"github.com/Carbon-X-DAO/CieloVerde.io/fsutil"
+	"github.com/Carbon-X-DAO/CieloVerde.io/templates"
 	"github.com/mailgun/mailgun-go/v4"
 )
 
@@ -90,7 +90,7 @@ func New(addr, shibboleth string, mailgunAPIKey, flyerFilename, frontendRoot str
 		return nil, fmt.Errorf("failed to JPEG decode flyer image file: %s", err)
 	}
 
-	mgClient := mailgun.NewMailgun("cieloverde.io", mailgunAPIKey)
+	mgClient := mailgun.NewMailgun("CieloVerde.io", mailgunAPIKey)
 	ds := mgClient.ListDomains(&mailgun.ListOptions{Limit: 20})
 
 	var domains = []mailgun.Domain{}

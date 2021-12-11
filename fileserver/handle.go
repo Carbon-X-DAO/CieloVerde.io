@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Carbon-X-DAO/QRInvite/fsutil"
+	"github.com/Carbon-X-DAO/CieloVerde.io/fsutil"
 	"github.com/ajg/form"
 )
 

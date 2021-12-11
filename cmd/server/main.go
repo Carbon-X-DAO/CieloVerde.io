@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	fileserver "github.com/Carbon-X-DAO/QRInvite/fileserver"
+	fileserver "github.com/Carbon-X-DAO/CieloVerde.io/fileserver"
 	_ "github.com/lib/pq"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -27,6 +27,7 @@ var (
 	flagAddress        string
 	flagMailgunAPIKey  string
 	flagFlyerFilename  string
+	flagDBName         string
 	flagRoot           string
 	flagDBRole         string
 	flagCertFile       string
@@ -39,6 +40,7 @@ func init() {
 	flag.StringVar(&flagMailgunAPIKey, "mg", "", "priavte Mailgun API key")
 	flag.StringVar(&flagRoot, "root", "./result/static", "root path to site")
 	flag.StringVar(&flagFlyerFilename, "flyer", "./flyer.jpg", "path to flyer image")
+	flag.StringVar(&flagDBName, "dbname", "", "name of DB")
 	flag.StringVar(&flagDBRole, "role", "postgres", "postgres DB user role")
 	flag.StringVar(&flagCertFile, "cert", "example.crt", "TLS certificate file")
 	flag.StringVar(&flagKeyFile, "key", "example.key", "TLS certificate signing key file")
@@ -62,20 +64,19 @@ func main() {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	if _, err := db.ExecContext(ctx, `CREATE DATABASE qrinvite`); err != nil && !strings.Contains(err.Error(), "already exists") {
-		log.Fatalf("failed to create database qrinvite: %s", err)
+	if _, err := db.ExecContext(ctx, fmt.Sprintf(`CREATE DATABASE %s`, flagDBName)); err != nil && !strings.Contains(err.Error(), "already exists") {
+		log.Fatalf("failed to create database %s: %s", flagDBName, err)
 	}
 	cancel()
 
-	// switch to the qrinvite DB now that it has been created
-	dbName = "qrinvite"
-	db, err = sql.Open("postgres", fmt.Sprintf("postgres://%s@%s:%d/%s?%s", flagDBRole, dbHost, dbPort, dbName, opts))
+	// switch to the %s DB now that it has been created
+	db, err = sql.Open("postgres", fmt.Sprintf("postgres://%s@%s:%d/%s?%s", flagDBRole, dbHost, dbPort, flagDBName, opts))
 	if err != nil {
 		log.Fatalf("failed to initialize a postgres instance for app usage: %s", err)
 	}
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{
-		DatabaseName: "qrinvite",
+		DatabaseName: flagDBName,
 	})
 	if err != nil {
 		log.Fatalf("failed to obtain postgres driver for migrations: %s", err)
@@ -84,7 +85,7 @@ func main() {
 	// apply migrations
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://migrations",
-		"qrinvite",
+		flagDBName,
 		driver,
 	)
 	if err != nil {

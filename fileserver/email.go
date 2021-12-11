@@ -11,7 +11,7 @@ import (
 
 	goimage "image"
 
-	"github.com/Carbon-X-DAO/QRInvite/image"
+	"github.com/Carbon-X-DAO/CieloVerde.io/image"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
 )
@@ -48,13 +48,13 @@ func (server *Server) sendEmail(email string, hash [16]byte) (string, string, er
 	}
 
 	subject := `Movimiento Cannabico Colombiano Premio 11 de Diciembre 2021`
-	msg := server.mg.NewMessage("noreply@cieloverde.io", subject, "", email)
+	msg := server.mg.NewMessage("noreply@CieloVerde.io", subject, "", email)
 	msg.SetHtml(body)
 
 	msg.AddReaderAttachment("boleto.jpg", ioutil.NopCloser(&buf))
 	msg.AddHeader(
 		"List-Unsubscribe",
-		fmt.Sprintf("<mailto:unsubscribe@cieloverde.io>,<https://cieloverde.io/unsubscribe?email=%s>", url.QueryEscape(email)),
+		fmt.Sprintf("<mailto:unsubscribe@CieloVerde.io>,<https://CieloVerde.io/unsubscribe?email=%s>", url.QueryEscape(email)),
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -65,7 +65,7 @@ func (server *Server) sendEmail(email string, hash [16]byte) (string, string, er
 }
 
 func generateQRCode(hash [16]byte) (goimage.Image, error) {
-	hashString := string(fmt.Sprintf("https://cieloverde.io/users/%x", hash))
+	hashString := string(fmt.Sprintf("https://CieloVerde.io/users/%x", hash))
 
 	code, err := qr.Encode(hashString, qr.L, qr.Auto)
 	if err != nil {
