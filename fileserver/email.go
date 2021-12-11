@@ -65,7 +65,7 @@ func (server *Server) sendEmail(email string, hash [16]byte) (string, string, er
 }
 
 func generateQRCode(hash [16]byte) (goimage.Image, error) {
-	hashString := string(fmt.Sprintf("%x", hash))
+	hashString := string(fmt.Sprintf("https://cieloverde.io/users/%x", hash))
 
 	code, err := qr.Encode(hashString, qr.L, qr.Auto)
 	if err != nil {
