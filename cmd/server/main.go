@@ -74,6 +74,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to initialize a postgres instance for app usage: %s", err)
 	}
+	defer db.Close()
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{
 		DatabaseName: flagDBName,
