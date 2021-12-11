@@ -54,6 +54,13 @@ const tplUnauthorized = `
 const loginForm = `
 <!DOCTYPE html>
 <html>
+<style>
+   input {
+		font-size: 54px;
+		display:block;
+		margin: 40px;
+   }
+</style>
 <body>
 <form action="/login" method="POST">
 <input name="username" placeholder="username" />
