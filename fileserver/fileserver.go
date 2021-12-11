@@ -57,13 +57,15 @@ const (
 	email_status(email_address, gov_id, mailgun_msg, mailgun_id, error, ctime)
 	VALUES( $1, $2, $3, $4, $5, $6)`
 
-	querySelectUser = `SELECT first_name, last_name, id_no, claimed FROM form_info WHERE id_hash=$1`
+	querySelectUser  = `SELECT first_name, last_name, id_no, claimed FROM form_info WHERE id_hash=$1`
+	queryupdateClaim = `UPDATE form_info SET claimed = TRUE WHERE id_hash=$1`
 )
 
 var stmtInsertQRIncomingHeaders *sql.Stmt
 var stmtInsertFormRow *sql.Stmt
 var stmtInsertEmailStatus *sql.Stmt
 var stmtSelectUser *sql.Stmt
+var stmtUpdateClaim *sql.Stmt
 
 type Server struct {
 	frontendRoot string
@@ -125,6 +127,10 @@ func New(addr, shibboleth string, mailgunAPIKey, flyerFilename, frontendRoot str
 		return nil, fmt.Errorf("failed to prepare statement for selecting users from form_info: %w", err)
 	}
 
+	if stmtUpdateClaim, err = db.Prepare(queryupdateClaim); err != nil {
+		return nil, fmt.Errorf("failed to prepare statement for selecting users from form_info: %w", err)
+	}
+
 	mux := http.NewServeMux()
 	mux.Handle("/", server)
 
@@ -174,6 +180,8 @@ func (server *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		server.handleLogin(w, r)
 	case r.URL.Path == "/login" && r.Method == http.MethodPost:
 		server.handleLoginRequest(w, r)
+	case strings.HasPrefix(r.URL.Path, "/claim/"):
+		server.updateClaim(w, r)
 	case strings.HasPrefix(r.URL.Path, "/users/"):
 		server.handleGetUserInfo(w, r)
 	default:

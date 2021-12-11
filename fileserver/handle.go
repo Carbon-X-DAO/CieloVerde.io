@@ -223,7 +223,6 @@ func (server *Server) handleLoginRequest(w http.ResponseWriter, r *http.Request)
 }
 
 func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) {
-	log.Printf("you requested %s", r.URL.String())
 	hash := strings.TrimPrefix(r.URL.Path, "/users/")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -258,8 +257,6 @@ func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) 
 
 	u := user{first, last, gov_id, hash}
 
-	log.Printf("found user %+v, %v", u, claimed)
-
 	if claimed {
 		t, err := template.New("alreadyClaimed").Parse(tplAlreadyClaimed)
 		if err != nil {
@@ -282,6 +279,21 @@ func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func (server *Server) updateClaim(w http.ResponseWriter, r *http.Request) {
+	hash := strings.TrimPrefix(r.URL.Path, "/claim/")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	_, err := stmtUpdateClaim.QueryContext(ctx, hash)
+	if err != nil {
+		log.Printf("failed to select from form_info for hash %s: %s", hash, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/users/%s", hash), http.StatusSeeOther)
 }
 
 func saveRequestInfo(hdrs http.Header, url *url.URL) {
