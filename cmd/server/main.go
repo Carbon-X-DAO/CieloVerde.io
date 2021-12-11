@@ -25,6 +25,8 @@ import (
 
 var (
 	flagAddress        string
+	flagAdminUser      string
+	flagAdminPassword  string
 	flagMailgunAPIKey  string
 	flagFlyerFilename  string
 	flagDBName         string
@@ -37,6 +39,9 @@ var (
 
 func init() {
 	flag.StringVar(&flagAddress, "address", "0.0.0.0:80", "address on which to listen")
+	flag.StringVar(&flagAdminUser, "adminuser", "cielo", "username of admin")
+	flag.StringVar(&flagAdminPassword, "adminpassword", "verde", "password of admin")
+
 	flag.StringVar(&flagMailgunAPIKey, "mg", "", "priavte Mailgun API key")
 	flag.StringVar(&flagRoot, "root", "./result/static", "root path to site")
 	flag.StringVar(&flagFlyerFilename, "flyer", "./flyer.jpg", "path to flyer image")
@@ -131,7 +136,7 @@ func main() {
 		log.Fatal("both cert file and key file must be either non-empty or empty")
 	}
 
-	srv, err := fileserver.New(flagAddress, flagShibbolethGUID, flagMailgunAPIKey, flagFlyerFilename, root, tlsConfig, db)
+	srv, err := fileserver.New(flagAddress, flagAdminUser, flagAdminPassword, flagShibbolethGUID, flagMailgunAPIKey, flagFlyerFilename, root, tlsConfig, db)
 	if err != nil {
 		log.Fatalf("failed to create a new fileserver instance: %s", err)
 	}

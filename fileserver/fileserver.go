@@ -8,6 +8,7 @@ import (
 	"context"
 	"crypto/tls"
 	"database/sql"
+	"errors"
 	"fmt"
 	"html/template"
 	"image"
@@ -70,14 +71,16 @@ var stmtUpdateClaim *sql.Stmt
 type Server struct {
 	frontendRoot string
 	*http.Server
-	db         *sql.DB
-	flyer      image.Image
-	mg         *mailgun.MailgunImpl
-	shibboleth string
+	db            *sql.DB
+	flyer         image.Image
+	mg            *mailgun.MailgunImpl
+	shibboleth    string
+	adminUser     string
+	adminPassword string
 }
 
 // tlsConfig may be nil, in which case an HTTP server will serve without TLS
-func New(addr, shibboleth string, mailgunAPIKey, flyerFilename, frontendRoot string, tlsConfig *tls.Config, db *sql.DB) (*Server, error) {
+func New(addr, adminUser, adminPassword, shibboleth, mailgunAPIKey, flyerFilename, frontendRoot string, tlsConfig *tls.Config, db *sql.DB) (*Server, error) {
 	var err error
 
 	flyerHandle, err := os.Open(flyerFilename)
@@ -104,11 +107,17 @@ func New(addr, shibboleth string, mailgunAPIKey, flyerFilename, frontendRoot str
 	}
 
 	server := &Server{
-		frontendRoot: frontendRoot,
-		db:           db,
-		flyer:        flyerImg,
-		mg:           mgClient,
-		shibboleth:   shibboleth,
+		frontendRoot:  frontendRoot,
+		db:            db,
+		flyer:         flyerImg,
+		mg:            mgClient,
+		shibboleth:    shibboleth,
+		adminUser:     adminUser,
+		adminPassword: adminPassword,
+	}
+
+	if server.adminPassword == "" || server.adminUser == "" {
+		return nil, errors.New("both adminUser and adminPassword must be non-ompty")
 	}
 
 	if stmtInsertQRIncomingHeaders, err = db.Prepare(queryInsertQRIncomingHeaders); err != nil {

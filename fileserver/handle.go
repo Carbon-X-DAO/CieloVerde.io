@@ -42,6 +42,15 @@ type formInfo struct {
 	Authorized   bool   `form:"authorized"`
 }
 
+const tplUnauthorized = `
+<!DOCTYPE html>
+<html>
+	<body>
+		<h1>Desautorizado</h1>
+	</body>
+</html>
+`
+
 const loginForm = `
 <!DOCTYPE html>
 <html>
@@ -206,9 +215,11 @@ func (server *Server) handleLoginRequest(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if !(li.Username == "admin" && li.Password == "admin") {
+	if !(li.Username == server.adminUser && li.Password == server.adminPassword) {
 		log.Println("rejected invalid login attempt")
+		w.Header().Add("Content-Type", "text/html")
 		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(tplUnauthorized))
 		return
 	}
 
@@ -224,7 +235,9 @@ func (server *Server) handleLoginRequest(w http.ResponseWriter, r *http.Request)
 
 func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) {
 	if len(r.Cookies()) == 0 {
+		w.Header().Add("Content-Type", "text/html")
 		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(tplUnauthorized))
 		return
 	}
 
@@ -234,7 +247,9 @@ func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) 
 		}
 		// we're on the last cookie and we didn't see what we need to see
 		if i == len(r.Cookies())-1 {
+			w.Header().Add("Content-Type", "text/html")
 			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(tplUnauthorized))
 			return
 		}
 	}
