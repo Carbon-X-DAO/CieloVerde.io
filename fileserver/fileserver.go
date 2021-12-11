@@ -28,6 +28,38 @@ import (
 
 var reInboundQR = regexp.MustCompile(`^\/qrcodes\/(?P<code>[0-9])$`)
 
+const (
+	queryInsertFormRow = `INSERT INTO
+	form_info(
+		first_name, last_name,
+		country, department, city, town, neighborhood, street, street_number,
+		id_no, phone, email, gender, age,
+		daily_qty, weekly_qty, monthly_qty,
+		newsletter, gift_box, authorized, claimed,
+		ctime
+	)
+	VALUES (
+		$1, $2,
+		$3, $4, $5, $6, $7, $8, $9,
+		$10, $11, $12, $13, $14,
+		$15,$16, $17,
+		$18, $19, $20, $21,
+		$22
+	);`
+
+	queryInsertQRIncomingHeaders = `INSERT INTO
+	request_info(acceptlanguage, cookie, useragent, cfconnectingip, xforwardedfor, cfray, cfipcountry, cfvisitor, url_value, ctime)
+	VALUES( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10 )`
+
+	queryInsertEmailStatus = `INSERT INTO
+	email_status(email_address, gov_id, mailgun_msg, mailgun_id, error, ctime)
+	VALUES( $1, $2, $3, $4, $5, $6)`
+)
+
+var stmtInsertQRIncomingHeaders *sql.Stmt
+var stmtInsertFormRow *sql.Stmt
+var stmtInsertEmailStatus *sql.Stmt
+
 type Server struct {
 	frontendRoot string
 	*http.Server
@@ -76,6 +108,10 @@ func New(addr, mailgunAPIKey, flyerFilename, frontendRoot string, tlsConfig *tls
 
 	if stmtInsertFormRow, err = db.Prepare(queryInsertFormRow); err != nil {
 		return nil, fmt.Errorf("failed to prepare statement for storing form information: %w", err)
+	}
+
+	if stmtInsertEmailStatus, err = db.Prepare(queryInsertEmailStatus); err != nil {
+		return nil, fmt.Errorf("failed to prepare statement for storing email status information: %w", err)
 	}
 
 	mux := http.NewServeMux()

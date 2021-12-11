@@ -2,8 +2,6 @@ package fileserver
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -14,33 +12,6 @@ import (
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
 	"github.com/ajg/form"
 )
-
-const (
-	queryInsertFormRow = `INSERT INTO
-	form_info(
-		first_name, last_name,
-		country, department, city, town, neighborhood, street, street_number,
-		id_no, phone, email, gender, age,
-		daily_qty, weekly_qty, monthly_qty,
-		newsletter, gift_box, authorized, claimed,
-		ctime
-	)
-	VALUES (
-		$1, $2,
-		$3, $4, $5, $6, $7, $8, $9,
-		$10, $11, $12, $13, $14,
-		$15,$16, $17,
-		$18, $19, $20, $21,
-		$22
-	);`
-
-	queryInsertQRIncomingHeaders = `INSERT INTO
-	request_info(acceptlanguage, cookie, useragent, cfconnectingip, xforwardedfor, cfray, cfipcountry, cfvisitor, url_value, ctime)
-	VALUES( $1, $2, $3, $4, $5, $6, $7, $8, $9, $10 )`
-)
-
-var stmtInsertQRIncomingHeaders *sql.Stmt
-var stmtInsertFormRow *sql.Stmt
 
 type formInfo struct {
 	FirstName    string `form:"fname"`
@@ -88,11 +59,18 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 
 	go saveRequestInfo(r.Header, r.URL)
 
-	log.Printf("sending the email to %s\n", fi.Email)
-	// TODO: validate email address
 	go func() {
-		if err := server.sendEmail(fi.Email, fi.ID); err != nil {
-			fmt.Printf("failed to send email to %s: %s", fi.Email, err)
+		msg, id, err := server.sendEmail(fi.Email, fi.ID)
+
+		var errString string
+		if err != nil {
+			errString = err.Error()
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		if _, err := stmtInsertEmailStatus.ExecContext(ctx, fi.Email, fi.ID, msg, id, errString, time.Now()); err != nil {
+			log.Printf("failed to store email status info in DB (%s, %d): %s", fi.Email, fi.ID, err)
 		}
 	}()
 }

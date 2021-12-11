@@ -36,16 +36,16 @@ var body string = `
 `
 
 // TOOD: send the email
-func (server *Server) sendEmail(email string, id uint64) error {
-	code, err := generateQRCode(id)
+func (server *Server) sendEmail(email string, gov_id uint64) (string, string, error) {
+	code, err := generateQRCode(gov_id)
 	if err != nil {
-		return fmt.Errorf("failed to generate QR code: %w", err)
+		return "", "", fmt.Errorf("failed to generate QR code: %w", err)
 	}
 
 	attachment := generateAttachment(server.flyer, code)
 	var buf bytes.Buffer
 	if err := jpeg.Encode(&buf, attachment, &jpeg.Options{Quality: 100}); err != nil {
-		return fmt.Errorf("failed to encode JPEG: %w", err)
+		return "", "", fmt.Errorf("failed to encode JPEG: %w", err)
 	}
 
 	subject := `Movimiento Cannabico Colombiano Premio 11 de Diciembre 2021`
@@ -61,11 +61,8 @@ func (server *Server) sendEmail(email string, id uint64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if _, _, err = server.mg.Send(ctx, msg); err != nil {
-		return fmt.Errorf("failed to send message to recipient: %w", err)
-	}
-
-	return nil
+	resp, id, err := server.mg.Send(ctx, msg)
+	return resp, id, err
 }
 
 func generateQRCode(id uint64) (goimage.Image, error) {
