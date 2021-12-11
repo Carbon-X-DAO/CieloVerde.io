@@ -223,6 +223,16 @@ func (server *Server) handleLoginRequest(w http.ResponseWriter, r *http.Request)
 }
 
 func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) {
+	for i, cook := range r.Cookies() {
+		if cook.Name == "Shibboleth" && cook.Value == server.shibboleth {
+			break
+		}
+		// we're on the last cookie and we didn't see what we need to see
+		if i == len(r.Cookies())-1 {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+	}
 	hash := strings.TrimPrefix(r.URL.Path, "/users/")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
