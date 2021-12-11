@@ -55,10 +55,20 @@ const loginForm = `
 </html>
 `
 
-const tpl = `
+const tplAlreadyClaimed = `
 <!DOCTYPE html>
 <html>
-	<body>
+	<body style="background-color: #F88685">
+		<p> {{.First}} {{.Last}} </p>
+		<p> {{.ID}} </p>
+	</body>
+</html>
+`
+
+const tplClaim = `
+<!DOCTYPE html>
+<html>
+	<body style="background-color: #C8F5C6">
 		<p> {{.First}} {{.Last}} </p>
 		<p> {{.ID}} </p>
 		<form  method="POST" action="/claim/{{.Hash}}">
@@ -244,17 +254,34 @@ func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) 
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-
-		log.Printf("found %s %s - claimed %v", first, last, claimed)
 	}
 
-	t, err := template.New("webpage").Parse(tpl)
+	u := user{first, last, gov_id, hash}
+
+	log.Printf("found user %+v, %v", u, claimed)
+
+	if claimed {
+		t, err := template.New("alreadyClaimed").Parse(tplAlreadyClaimed)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		t.Execute(w, u)
+		return
+	}
+
+	t, err := template.New("claim").Parse(tplClaim)
 	if err != nil {
+		log.Printf("failed to generate template for claiming: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	t.Execute(w, user{first, last, gov_id, hash})
+	if err := t.Execute(w, u); err != nil {
+		log.Printf("failed to execute template for claiming: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func saveRequestInfo(hdrs http.Header, url *url.URL) {
