@@ -21,11 +21,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1639181762,
-        "narHash": "sha256-QTGUzCW8VXm26dFE3VlBaUgEnPnpLQy0bR2BIlIFR7k=",
+        "lastModified": 1639191932,
+        "narHash": "sha256-Kcfu8PsWXmY2ep4fAk3I+V7a3KQ3iIhw2KNoeAeGVTY=",
         "ref": "main",
-        "rev": "fe6250e06db32032903096717d5aa7fc8252b8d3",
-        "revCount": 11,
+        "rev": "459fbf6eb70b9a11be31ea67fbe7ad4205901f66",
+        "revCount": 13,
         "type": "git",
         "url": "ssh://git@github.com/Carbon-X-DAO/cieloverde.io-frontend"
       },
