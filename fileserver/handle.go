@@ -142,7 +142,7 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 	if err := saveFormInfo(ctx, &fi, hash); err != nil {
 		// has this ID already submitted an ID?
 		if strings.Contains(err.Error(), "duplicate") {
-			w.WriteHeader(http.StatusNotModified)
+			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
 		log.Printf("failed to save form: %+v: %s", fi, err)
