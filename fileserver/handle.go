@@ -19,10 +19,8 @@ type formInfo struct {
 	Country      string `form:"country"`
 	Department   string `form:"department"`
 	City         string `form:"city"`
-	Town         string `form:"town"`
 	Neighborhood string `form:"neighborhood"`
-	Street       string `form:"street"`
-	StreetNumber string `form:"address_number"`
+	Street       string `form:"street_address"`
 	ID           uint64 `form:"id_no"`
 	Phone        string `form:"phone"`
 	Email        string `form:"email"`
@@ -158,7 +156,7 @@ func saveRequestInfo(hdrs http.Header, url *url.URL) {
 
 func saveFormInfo(ctx context.Context, f *formInfo) error {
 	_, err := stmtInsertFormRow.ExecContext(ctx, f.FirstName, f.LastName,
-		f.Country, f.Department, f.City, f.Town, f.Neighborhood, f.Street, f.StreetNumber,
+		f.Country, f.Department, f.City, f.Neighborhood, f.Street,
 		f.ID, f.Phone, f.Email, f.Gender, f.Age,
 		f.DailyQty, f.WeeklyQty, f.MonthlyQty,
 		f.Newsletter, f.GiftBox, f.Authorized, false, time.Now())

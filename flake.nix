@@ -15,7 +15,7 @@
 
           src = ./.;
 
-          vendorSha256 = "LNSLbLaLiKFD2tn5nyUfje/3m7NdHvjSh1zboPqSnO0=";
+          vendorSha256 = "ugVFrfT+7sHC+lajBfZfwzwRjliFQul7su9Zf08jNaI=";
         };
       in
       rec {
@@ -30,10 +30,10 @@
 
             configurePhase = ''
               mkdir -p $out/static
+              cp -r ${self.frontend.packages.${system}.frontend}/* $out/static/;
             '';
 
             installPhase = ''
-              cp -r ${self.frontend.packages.${system}.frontend}/* $out/static/;
               cp -r ${webserver}/bin/server $out/server
             '';
           };
