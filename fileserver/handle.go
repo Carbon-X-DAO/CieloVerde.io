@@ -42,6 +42,13 @@ type formInfo struct {
 	Authorized   bool   `form:"authorized"`
 }
 
+const tplLoggedIn = `<!DOCTYPE html>
+<html>
+	<body>
+		<h1>Conectado ... Puede salir de esta p&aacute;gina ahora.</h1>
+	</body>
+</html>`
+
 const tplNoSuchUser = `<!DOCTYPE html>
 <html>
 	<body>
@@ -245,6 +252,9 @@ func (server *Server) handleLoginRequest(w http.ResponseWriter, r *http.Request)
 		Value:   server.shibboleth,
 		Expires: until,
 	})
+
+	w.Header().Add("Content-Type", "text/html")
+	w.Write([]byte(tplLoggedIn))
 }
 
 func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) {
