@@ -42,8 +42,15 @@ type formInfo struct {
 	Authorized   bool   `form:"authorized"`
 }
 
-const tplUnauthorized = `
-<!DOCTYPE html>
+const tplNoSuchUser = `<!DOCTYPE html>
+<html>
+	<body>
+		<h1>Usuario no existe</h1>
+	</body>
+</html>
+`
+
+const tplUnauthorized = `<!DOCTYPE html>
 <html>
 	<body>
 		<h1>Desautorizado</h1>
@@ -260,6 +267,7 @@ func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 	}
+
 	hash := strings.TrimPrefix(r.URL.Path, "/users/")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -290,6 +298,13 @@ func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) 
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+	}
+
+	if cnt == 0 {
+		w.Header().Add("Content-Type", "text/html")
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(tplNoSuchUser))
+		return
 	}
 
 	u := user{first, last, gov_id, hash}
