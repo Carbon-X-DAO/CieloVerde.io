@@ -223,6 +223,11 @@ func (server *Server) handleLoginRequest(w http.ResponseWriter, r *http.Request)
 }
 
 func (server *Server) handleGetUserInfo(w http.ResponseWriter, r *http.Request) {
+	if len(r.Cookies()) == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	for i, cook := range r.Cookies() {
 		if cook.Name == "Shibboleth" && cook.Value == server.shibboleth {
 			break
