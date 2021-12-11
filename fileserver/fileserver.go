@@ -18,7 +18,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/Carbon-X-DAO/QRInvite/fsutil"
@@ -159,8 +158,6 @@ func (server *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		server.handleQRInbound(w, r)
 	case r.URL.Path == "/submit" && r.Method == http.MethodPost:
 		server.handleForm(w, r)
-	case strings.Contains(r.URL.Path, "tickets"):
-		server.handleTicketsPath(w, r)
 	default:
 		server.handleFrontendPath(w, r)
 	}

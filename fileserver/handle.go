@@ -49,7 +49,9 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	if err := saveFormInfo(ctx, &fi); err != nil {
+		// has this ID already submitted an ID?
 		if strings.Contains(err.Error(), "duplicate") {
+			w.WriteHeader(http.StatusNotModified)
 			return
 		}
 		log.Printf("failed to save form: %+v: %s", fi, err)
@@ -77,57 +79,6 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 
 func (server *Server) handleFrontendPath(w http.ResponseWriter, r *http.Request) {
 	path := filepath.Join(server.frontendRoot, r.URL.Path)
-	exists, err := fsutil.Exists(path)
-	if err != nil {
-		writeErr(err, w)
-		return
-	}
-
-	w.Header().Add("Cache-Control", "max-age=86400,s-maxage=86400")
-	if exists {
-		isDir, err := fsutil.IsDir(path)
-		if err != nil {
-			writeErr(err, w)
-			return
-		}
-
-		if isDir {
-			server.serveDir(path, w)
-			return
-		}
-
-		switch filepath.Ext(path) {
-		case ".css":
-			{
-				w.Header().Set("Content-Type", "text/css")
-			}
-		case ".js":
-			{
-				w.Header().Set("Content-Type", "application/javascript")
-			}
-		}
-
-		server.serveFile(path, w)
-		return
-	}
-
-	htmlFile := path + ".html"
-	exists, err = fsutil.Exists(htmlFile)
-	if err != nil {
-		writeErr(err, w)
-		return
-	}
-
-	if exists {
-		w.Header().Set("Content-Type", "text/html")
-		server.serveFile(htmlFile, w)
-	} else {
-		server.serveNotFound(w)
-	}
-}
-
-func (server *Server) handleTicketsPath(w http.ResponseWriter, r *http.Request) {
-	path := filepath.Join("./", r.URL.Path)
 	exists, err := fsutil.Exists(path)
 	if err != nil {
 		writeErr(err, w)
