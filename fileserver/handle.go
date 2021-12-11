@@ -57,22 +57,24 @@ func (server *Server) handleForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go saveRequestInfo(r.Header, r.URL)
+	if fi.Authorized {
+		go saveRequestInfo(r.Header, r.URL)
 
-	go func() {
-		msg, id, err := server.sendEmail(fi.Email, fi.ID)
+		go func() {
+			msg, id, err := server.sendEmail(fi.Email, fi.ID)
 
-		var errString string
-		if err != nil {
-			errString = err.Error()
-		}
+			var errString string
+			if err != nil {
+				errString = err.Error()
+			}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		if _, err := stmtInsertEmailStatus.ExecContext(ctx, fi.Email, fi.ID, msg, id, errString, time.Now()); err != nil {
-			log.Printf("failed to store email status info in DB (%s, %d): %s", fi.Email, fi.ID, err)
-		}
-	}()
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			if _, err := stmtInsertEmailStatus.ExecContext(ctx, fi.Email, fi.ID, msg, id, errString, time.Now()); err != nil {
+				log.Printf("failed to store email status info in DB (%s, %d): %s", fi.Email, fi.ID, err)
+			}
+		}()
+	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
